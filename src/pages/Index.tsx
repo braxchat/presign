@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
-  Truck, 
+  Package2, 
   ArrowRight, 
   Shield, 
   DollarSign, 
@@ -46,10 +46,10 @@ export default function Index() {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Truck className="h-7 w-7 text-accent" />
-            <span className="font-display font-bold text-xl text-foreground">SignatureRelease</span>
-          </div>
+          <Link to="/" className="flex items-center gap-3">
+            <Package2 className="h-7 w-7 text-accent" />
+            <span className="font-display font-bold text-xl text-foreground">PreSign</span>
+          </Link>
           <div className="flex items-center gap-4">
             <Link to="/login">
               <Button variant="ghost">Sign In</Button>
@@ -203,12 +203,12 @@ export default function Index() {
       <footer className="bg-primary text-primary-foreground py-12 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <Truck className="h-6 w-6 text-accent" />
-              <span className="font-display font-bold">SignatureRelease</span>
-            </div>
+            <Link to="/" className="flex items-center gap-3">
+              <Package2 className="h-6 w-6 text-accent" />
+              <span className="font-display font-bold">PreSign</span>
+            </Link>
             <p className="text-primary-foreground/60 text-sm">
-              © 2024 SignatureRelease. All rights reserved.
+              © 2024 PreSign. All rights reserved.
             </p>
           </div>
         </div>

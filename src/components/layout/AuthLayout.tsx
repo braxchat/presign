@@ -1,4 +1,5 @@
-import { Truck } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Package2 } from "lucide-react";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -17,10 +18,10 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-accent rounded-full blur-3xl" />
         </div>
         <div className="relative z-10 flex flex-col justify-center px-16">
-          <div className="flex items-center gap-3 mb-8">
-            <Truck className="h-12 w-12 text-accent" />
-            <span className="font-display font-bold text-3xl text-primary-foreground">SignatureRelease</span>
-          </div>
+          <Link to="/" className="flex items-center gap-3 mb-8">
+            <Package2 className="h-12 w-12 text-accent" />
+            <span className="font-display font-bold text-3xl text-primary-foreground">PreSign</span>
+          </Link>
           <h1 className="font-display text-4xl font-bold text-primary-foreground mb-4">
             Remote Signature Release
             <br />
@@ -49,10 +50,10 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
 
       {/* Right side - Form */}
       <div className="flex-1 flex flex-col justify-center px-6 lg:px-16">
-        <div className="lg:hidden flex items-center gap-3 mb-12">
-          <Truck className="h-8 w-8 text-accent" />
-          <span className="font-display font-bold text-xl text-foreground">SignatureRelease</span>
-        </div>
+        <Link to="/" className="lg:hidden flex items-center gap-3 mb-12">
+          <Package2 className="h-8 w-8 text-accent" />
+          <span className="font-display font-bold text-xl text-foreground">PreSign</span>
+        </Link>
         <div className="max-w-md w-full mx-auto lg:mx-0">
           <h2 className="font-display text-2xl font-bold text-foreground mb-2">{title}</h2>
           <p className="text-muted-foreground mb-8">{subtitle}</p>

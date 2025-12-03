@@ -3,13 +3,13 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Package,
+  Package2,
   Plus,
   DollarSign,
   Settings,
   Menu,
   X,
   LogOut,
-  Truck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -34,10 +34,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="min-h-screen bg-background">
       {/* Mobile header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-50 h-16 bg-sidebar border-b border-sidebar-border flex items-center justify-between px-4">
-        <div className="flex items-center gap-3">
-          <Truck className="h-6 w-6 text-sidebar-primary" />
-          <span className="font-display font-bold text-sidebar-foreground">SignatureRelease</span>
-        </div>
+        <Link to="/" className="flex items-center gap-3">
+          <Package2 className="h-6 w-6 text-sidebar-primary" />
+          <span className="font-display font-bold text-sidebar-foreground">PreSign</span>
+        </Link>
         <Button
           variant="ghost"
           size="icon"
@@ -57,10 +57,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="h-16 flex items-center gap-3 px-6 border-b border-sidebar-border">
-            <Truck className="h-7 w-7 text-sidebar-primary" />
-            <span className="font-display font-bold text-lg text-sidebar-foreground">SignatureRelease</span>
-          </div>
+          <Link to="/" className="h-16 flex items-center gap-3 px-6 border-b border-sidebar-border">
+            <Package2 className="h-7 w-7 text-sidebar-primary" />
+            <span className="font-display font-bold text-lg text-sidebar-foreground">PreSign</span>
+          </Link>
 
           {/* Navigation */}
           <nav className="flex-1 px-3 py-6 space-y-1">

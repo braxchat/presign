@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Truck, Package, AlertTriangle, CheckCircle, Lock, ShieldCheck } from "lucide-react";
+import { Package2, Package, AlertTriangle, CheckCircle, Lock, ShieldCheck } from "lucide-react";
+import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
 export default function BuyerStatusPage() {
@@ -46,10 +47,10 @@ export default function BuyerStatusPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-primary text-primary-foreground py-4 px-6">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <Truck className="h-6 w-6 text-accent" />
-          <span className="font-display font-bold">SignatureRelease</span>
-        </div>
+        <Link to="/" className="max-w-2xl mx-auto flex items-center gap-3">
+          <Package2 className="h-6 w-6 text-accent" />
+          <span className="font-display font-bold">PreSign</span>
+        </Link>
       </header>
 
       <main className="max-w-2xl mx-auto px-6 py-8 space-y-6">
@@ -208,7 +209,7 @@ export default function BuyerStatusPage() {
         {/* Footer */}
         <div className="text-center text-sm text-muted-foreground">
           <p>Questions? Contact {shipment.merchantName} for support.</p>
-          <p className="mt-2">Powered by SignatureRelease</p>
+          <p className="mt-2">Powered by PreSign</p>
         </div>
       </main>
     </div>
