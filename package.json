@@ -38,6 +38,7 @@
     "@radix-ui/react-toggle-group": "^1.1.10",
     "@radix-ui/react-tooltip": "^1.2.7",
     "@shopify/app-bridge-react": "^4.2.8",
+    "@shopify/polaris": "^13.9.5",
     "@shopify/shopify-api": "^12.1.2",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.86.0",

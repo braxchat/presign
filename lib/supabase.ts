@@ -43,3 +43,5 @@ export function createServiceClient() {
 export const supabase = typeof window !== 'undefined' && supabaseUrl && supabaseAnonKey
   ? supabaseCreateClient<Database>(supabaseUrl, supabaseAnonKey)
   : null;
+
+export const supabaseService = createServiceClient();

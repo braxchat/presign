@@ -2,38 +2,47 @@ import { NextRequest, NextResponse } from 'next/server';
 import { shopify } from '@/lib/shopify';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 
+/**
+ * Register a webhook using Shopify's official webhook registration system
+ * Uses the REST Admin API through the Shopify client
+ */
 async function registerWebhook(
-  shop: string,
-  accessToken: string,
+  session: any, // Shopify session object
   topic: string,
-  address: string
+  callbackUrl: string
 ) {
-  const response = await fetch(
-    `https://${shop}/admin/api/2024-01/webhooks.json`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Shopify-Access-Token': accessToken,
-      },
-      body: JSON.stringify({
+  try {
+    // Create a REST client for the session
+    const client = new shopify.clients.Rest({ session });
+
+    // Register webhook using REST Admin API
+    const response = await client.post({
+      path: 'webhooks',
+      data: {
         webhook: {
           topic,
-          address,
+          address: callbackUrl,
           format: 'json',
         },
-      }),
-    }
-  );
+      },
+    });
 
-  if (!response.ok) {
-    const error = await response.text();
-    console.warn(`Failed to register webhook ${topic}:`, error);
+    if (response.body?.webhook?.id) {
+      console.log(`Webhook ${topic} registered successfully:`, response.body.webhook.id);
+      return true;
+    }
+
+    console.warn(`Failed to register webhook ${topic}:`, response.body);
+    return false;
+  } catch (error: any) {
+    // Check if webhook already exists (409 conflict)
+    if (error?.statusCode === 409) {
+      console.log(`Webhook ${topic} already exists`);
+      return true;
+    }
+    console.error(`Error registering webhook ${topic}:`, error);
     return false;
   }
-
-  console.log(`Webhook ${topic} registered successfully`);
-  return true;
 }
 
 export async function GET(request: NextRequest) {
@@ -78,20 +87,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Register webhooks using REST API
+    // Register webhooks using Shopify's official webhook registration system
     const baseUrl = process.env.APP_BASE_URL || process.env.SHOPIFY_APP_URL;
     
     try {
       await registerWebhook(
-        shopDomain,
-        accessToken,
+        session,
         'fulfillments/create',
         `${baseUrl}/api/shopify/fulfillment-created`
       );
 
       await registerWebhook(
-        shopDomain,
-        accessToken,
+        session,
         'fulfillments/update',
         `${baseUrl}/api/shopify/fulfillment-updated`
       );

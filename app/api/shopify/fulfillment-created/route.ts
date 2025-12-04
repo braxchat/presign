@@ -1,151 +1,227 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-admin';
-import {
-  verifyShopifyWebhook,
-  detectCarrier,
-  generateBuyerToken,
-  requiresSignature,
-  ShopifyFulfillmentWebhook,
-} from '@/lib/shopify-webhook';
+// app/api/shopify/fulfillment-created/route.ts
 
-export async function POST(request: NextRequest) {
+import { NextRequest, NextResponse } from "next/server";
+
+import { supabaseAdmin } from "@/lib/supabase-admin";
+
+import crypto from "crypto";
+
+import { sendShipmentNotificationEmail } from "@/lib/email";
+
+
+
+export async function POST(req: NextRequest) {
+
   try {
-    // Get raw body for HMAC verification
-    const rawBody = await request.text();
-    const hmacHeader = request.headers.get('X-Shopify-Hmac-SHA256');
-    const shopDomain = request.headers.get('X-Shopify-Shop-Domain');
 
-    // Verify webhook signature
-    if (!verifyShopifyWebhook(rawBody, hmacHeader)) {
-      console.error('Invalid Shopify webhook signature');
-      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-    }
+    const shopDomain = req.headers.get("x-shopify-shop-domain");
 
-    // Parse the fulfillment payload
-    const fulfillment: ShopifyFulfillmentWebhook = JSON.parse(rawBody);
-
-    console.log('Fulfillment created webhook received:', {
-      id: fulfillment.id,
-      order_id: fulfillment.order_id,
-      tracking_number: fulfillment.tracking_number,
-      shop: shopDomain,
-    });
-
-    // Look up merchant by shop domain
     if (!shopDomain) {
-      console.error('Missing shop domain header');
-      return NextResponse.json({ ok: true }); // Acknowledge but skip
+
+      console.warn("Missing shop domain header");
+
+      return NextResponse.json({ ok: true });
+
     }
 
-    const { data: merchant, error: merchantError } = await supabaseAdmin
-      .from('merchants')
-      .select('*')
-      .eq('shop_domain', shopDomain)
+
+
+    const fulfillmentPayload = await req.json();
+
+
+
+    // 1. Lookup merchant
+
+    const { data: merchant, error: merchantErr } = await supabaseAdmin
+
+      .from("merchants")
+
+      .select("*")
+
+      .eq("shop_domain", shopDomain)
+
       .single();
 
-    if (merchantError || !merchant) {
-      console.error('Merchant not found for shop:', shopDomain, merchantError);
-      return NextResponse.json({ ok: true }); // Acknowledge but skip
-    }
 
-    // Extract tracking info
-    const trackingNumber = fulfillment.tracking_number || fulfillment.tracking_numbers?.[0];
-    
-    if (!trackingNumber) {
-      console.log('No tracking number in fulfillment, skipping');
+
+    if (merchantErr || !merchant) {
+
+      console.warn("Merchant not found for shop domain:", shopDomain);
+
       return NextResponse.json({ ok: true });
+
     }
 
-    // Extract buyer info from destination
-    const destination = fulfillment.destination;
-    const buyerName = destination
-      ? `${destination.first_name} ${destination.last_name}`.trim()
-      : 'Unknown';
-    const buyerEmail = destination?.email || '';
 
-    if (!buyerEmail) {
-      console.log('No buyer email in fulfillment, skipping');
-      return NextResponse.json({ ok: true });
+
+    // 2. Pull fields from Shopify payload
+
+    const fulfillment = fulfillmentPayload.fulfillment || fulfillmentPayload;
+
+
+
+    const orderId = String(fulfillment.order_id || "");
+
+    const fulfillmentId = String(fulfillment.id || "");
+
+    const trackingNumber =
+
+      fulfillment.tracking_info?.number ||
+
+      fulfillment.tracking_number ||
+
+      "";
+
+    const carrierName =
+
+      fulfillment.tracking_info?.company ||
+
+      fulfillment.tracking_company ||
+
+      "Unknown";
+
+    // Map carrier name to enum
+
+    const carrier = carrierName.toLowerCase().includes('ups') ? 'UPS' : 
+
+                    carrierName.toLowerCase().includes('fedex') || carrierName.toLowerCase().includes('fed ex') ? 'FedEx' : 
+
+                    'UPS'; // Default to UPS
+
+
+
+    // Buyer details
+
+    const shippingAddress = fulfillmentPayload.shipping_address || {};
+
+    const buyerName =
+
+      shippingAddress.name ||
+
+      shippingAddress.first_name + " " + shippingAddress.last_name ||
+
+      "Customer";
+
+
+
+    const buyerEmail =
+
+      fulfillmentPayload.email ||
+
+      fulfillmentPayload.order?.email ||
+
+      "";
+
+
+
+    // Calculate item total
+
+    let totalCents = 0;
+
+    const lineItems = fulfillmentPayload.line_items || [];
+
+    for (const item of lineItems) {
+
+      const price = Number(item.price || 0);
+
+      const quantity = Number(item.quantity || 1);
+
+      totalCents += Math.round(price * 100 * quantity);
+
     }
 
-    // Calculate total value from line items
-    const totalValueCents = fulfillment.line_items.reduce((sum, item) => {
-      return sum + Math.round(parseFloat(item.price) * 100 * item.quantity);
-    }, 0);
 
-    // Detect carrier
-    const carrier = detectCarrier(
-      fulfillment.tracking_company || '',
-      trackingNumber
-    );
 
-    // Determine if signature is required
-    const needsSignature = requiresSignature(totalValueCents);
+    const requiresSignature = totalCents >= 50000; // $500 threshold
 
-    // Generate buyer status token
-    const buyerToken = generateBuyerToken();
 
-    // Check if shipment already exists (by tracking number and merchant)
-    const { data: existingShipment } = await supabaseAdmin
-      .from('shipments')
-      .select('id')
-      .eq('merchant_id', merchant.id)
-      .eq('tracking_number', trackingNumber)
-      .single();
 
-    if (existingShipment) {
-      console.log('Shipment already exists for tracking:', trackingNumber);
-      return NextResponse.json({ ok: true });
-    }
+    // 3. IMPORTANT — generate buyer_status_token
 
-    // Create the shipment
-    const { data: shipment, error: shipmentError } = await supabaseAdmin
-      .from('shipments')
-      .insert({
-        merchant_id: merchant.id,
-        tracking_number: trackingNumber,
-        carrier,
-        order_number: fulfillment.order_id?.toString() || null,
-        buyer_name: buyerName,
-        buyer_email: buyerEmail,
-        item_value_cents: totalValueCents,
-        requires_signature: needsSignature,
-        carrier_status: 'PreTransit',
-        override_status: 'none',
-        override_token: buyerToken,
-      })
-      .select()
-      .single();
+    const buyerStatusToken = crypto.randomUUID();
 
-    if (shipmentError) {
-      console.error('Failed to create shipment:', shipmentError);
-      return NextResponse.json({ ok: true }); // Acknowledge to prevent retries
-    }
 
-    console.log('Shipment created:', {
-      id: shipment.id,
-      tracking: trackingNumber,
-      buyer: buyerEmail,
-      requiresSignature: needsSignature,
+
+    // 4. Insert shipment
+
+    const { error: insertErr } = await supabaseAdmin.from("shipments").insert({
+
+      merchant_id: merchant.id,
+
+      order_number: orderId,
+
+      tracking_number: trackingNumber,
+
+      carrier,
+
+      buyer_email: buyerEmail,
+
+      buyer_name: buyerName,
+
+      item_value_cents: totalCents,
+
+      requires_signature: requiresSignature,
+
+      buyer_status_token: buyerStatusToken,
+
+      carrier_status: "PreTransit",
+
+      override_locked: false,
+
+      override_status: "none",
+
     });
 
-    // TODO: Trigger buyer email with status page link
-    // The buyer can access their status at: /status/{buyerToken}
-    // This would typically call an email service like Resend
-    // 
-    // Example:
-    // await sendBuyerEmail({
-    //   to: buyerEmail,
-    //   buyerName,
-    //   trackingNumber,
-    //   statusUrl: `${process.env.APP_BASE_URL}/status/${buyerToken}`,
-    //   merchantName: merchant.business_name,
-    // });
 
-    return NextResponse.json({ ok: true, shipmentId: shipment.id });
-  } catch (error) {
-    console.error('Fulfillment created webhook error:', error);
-    // Return 200 to acknowledge receipt and prevent retries
+
+    if (insertErr) {
+
+      console.error("Failed inserting shipment:", insertErr);
+
+      return NextResponse.json({ ok: true });
+
+    }
+
+
+
+    // 5. Send email if signature required
+
+    if (requiresSignature && buyerEmail) {
+
+      const statusUrl = `${process.env.APP_BASE_URL}/status/${buyerStatusToken}`;
+
+
+
+      await sendShipmentNotificationEmail({
+
+        buyerEmail,
+
+        buyerName,
+
+        trackingNumber,
+
+        carrier,
+
+        merchantName: merchant.business_name || merchant.shop_domain || shopDomain,
+
+        buyerToken: buyerStatusToken,
+
+        requiresSignature,
+
+      });
+
+    }
+
+
+
     return NextResponse.json({ ok: true });
+
+  } catch (err) {
+
+    console.error("Error in fulfillment-created webhook:", err);
+
+    return NextResponse.json({ ok: true });
+
   }
+
 }

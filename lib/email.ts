@@ -13,6 +13,91 @@ function getStatusUrl(buyerToken: string): string {
   return `${baseUrl}/status/${buyerToken}`;
 }
 
+/**
+ * Base email template wrapper
+ */
+function getEmailTemplate(content: string): string {
+  return `
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no">
+  <title>PreSign - Package Delivery Management</title>
+  <!--[if mso]>
+  <style type="text/css">
+    table {border-collapse:collapse;border-spacing:0;margin:0;}
+    div, td {padding:0;}
+    div {margin:0 !important;}
+  </style>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+  <style type="text/css">
+    /* Reset styles */
+    body, table, td, p, a, li, blockquote {
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+    table, td {
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
+    img {
+      -ms-interpolation-mode: bicubic;
+      border: 0;
+      outline: none;
+      text-decoration: none;
+    }
+    /* Client-specific styles */
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100% !important;
+      min-width: 100%;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+    /* Prevent iOS blue links */
+    a[x-apple-data-detectors] {
+      color: inherit !important;
+      text-decoration: none !important;
+      font-size: inherit !important;
+      font-family: inherit !important;
+      font-weight: inherit !important;
+      line-height: inherit !important;
+    }
+    /* Desktop styles */
+    @media only screen and (min-width: 600px) {
+      .email-container {
+        width: 600px !important;
+      }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; width: 100%; background-color: #f4f4f7; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0; padding: 0; width: 100%; background-color: #f4f4f7;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="email-container" style="width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          ${content}
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
 interface ShipmentNotificationParams {
   buyerEmail: string;
   buyerName: string;
@@ -40,64 +125,107 @@ export async function sendShipmentNotificationEmail({
   
   const subject = `Your ${merchantName} order has shipped!`;
   
-  const html = `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 30px; border-radius: 12px 12px 0 0;">
-          <h1 style="color: #fff; margin: 0; font-size: 24px;">${APP_NAME}</h1>
-        </div>
+  const content = `
+    <!-- Header -->
+    <tr>
+      <td style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px 30px; text-align: center;">
+        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">${APP_NAME}</h1>
+      </td>
+    </tr>
+    
+    <!-- Main Content -->
+    <tr>
+      <td style="padding: 40px 30px;">
+        <p style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.6; color: #1f2937; font-weight: 500;">Hi ${buyerName},</p>
         
-        <div style="background: #fff; padding: 30px; border: 1px solid #e5e5e5; border-top: none; border-radius: 0 0 12px 12px;">
-          <p style="font-size: 18px; margin-top: 0;">Hi ${buyerName},</p>
+        <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+          Great news! Your order from <strong style="color: #1f2937;">${merchantName}</strong> has shipped.
+        </p>
+        
+        <!-- Tracking Info Card -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+          <tr>
+            <td style="padding: 20px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="padding: 0 0 12px 0;">
+                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Tracking Number</p>
+                    <p style="margin: 8px 0 0 0; font-size: 18px; font-family: 'Courier New', monospace; font-weight: 600; color: #1f2937; word-break: break-all;">${trackingNumber}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0 0 0; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Carrier</p>
+                    <p style="margin: 8px 0 0 0; font-size: 16px; font-weight: 500; color: #1f2937;">${carrier}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        
+        ${requiresSignature ? `
+          <!-- Signature Required Alert -->
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 6px;">
+            <tr>
+              <td style="padding: 16px 20px;">
+                <p style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #92400e;">
+                  ⚠️ Signature Required
+                </p>
+                <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #78350f;">
+                  This package requires a signature upon delivery. If you won't be home, you can authorize the carrier to leave the package without a signature.
+                </p>
+              </td>
+            </tr>
+          </table>
           
-          <p>Great news! Your order from <strong>${merchantName}</strong> has shipped.</p>
-          
-          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 0 0 10px 0;"><strong>Tracking Number:</strong> ${trackingNumber}</p>
-            <p style="margin: 0;"><strong>Carrier:</strong> ${carrier}</p>
-          </div>
-          
-          ${requiresSignature ? `
-            <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
-              <p style="margin: 0; font-weight: 600;">⚠️ Signature Required</p>
-              <p style="margin: 10px 0 0 0; font-size: 14px;">
-                This package requires a signature upon delivery. If you won't be home, you can authorize the carrier to leave the package without a signature.
-              </p>
-            </div>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${statusUrl}" style="display: inline-block; background: #4f46e5; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                Manage Delivery Preferences
-              </a>
-            </div>
-          ` : `
-            <p>You can track your shipment status using the link below:</p>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${statusUrl}" style="display: inline-block; background: #4f46e5; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                Track Your Package
-              </a>
-            </div>
-          `}
-          
-          <p style="font-size: 14px; color: #666;">
-            If you have any questions about your order, please contact ${merchantName} directly.
+          <!-- CTA Button -->
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0;">
+            <tr>
+              <td align="center" style="padding: 0;">
+                <a href="${statusUrl}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);">
+                  Manage Delivery Preferences
+                </a>
+              </td>
+            </tr>
+          </table>
+        ` : `
+          <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+            You can track your shipment status using the link below:
           </p>
           
-          <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 30px 0;">
-          
-          <p style="font-size: 12px; color: #999; margin: 0;">
-            This email was sent by ${APP_NAME} on behalf of ${merchantName}.
-          </p>
-        </div>
-      </body>
-    </html>
+          <!-- CTA Button -->
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0;">
+            <tr>
+              <td align="center" style="padding: 0;">
+                <a href="${statusUrl}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);">
+                  Track Your Package
+                </a>
+              </td>
+            </tr>
+          </table>
+        `}
+        
+        <p style="margin: 0 0 30px 0; font-size: 14px; line-height: 1.6; color: #6b7280;">
+          If you have any questions about your order, please contact <strong style="color: #1f2937;">${merchantName}</strong> directly.
+        </p>
+        
+        <!-- Divider -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
+          <tr>
+            <td style="border-top: 1px solid #e5e7eb;"></td>
+          </tr>
+        </table>
+        
+        <!-- Footer -->
+        <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center;">
+          This email was sent by <strong style="color: #6b7280;">${APP_NAME}</strong> on behalf of ${merchantName}.
+        </p>
+      </td>
+    </tr>
   `;
+  
+  const html = getEmailTemplate(content);
 
   const text = `
 Hi ${buyerName},
@@ -170,57 +298,107 @@ export async function sendOverrideConfirmationEmail({
   
   const subject = `Signature release authorized for your ${merchantName} shipment`;
   
-  const html = `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 30px; border-radius: 12px 12px 0 0;">
-          <h1 style="color: #fff; margin: 0; font-size: 24px;">${APP_NAME}</h1>
-        </div>
+  const content = `
+    <!-- Header -->
+    <tr>
+      <td style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px 30px; text-align: center;">
+        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">${APP_NAME}</h1>
+      </td>
+    </tr>
+    
+    <!-- Success Badge -->
+    <tr>
+      <td style="padding: 30px 30px 0 30px; text-align: center;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto; background-color: #d1fae5; border-radius: 50px; padding: 12px 24px;">
+          <tr>
+            <td>
+              <p style="margin: 0; font-size: 15px; font-weight: 600; color: #065f46; letter-spacing: 0.3px;">
+                ✓ Signature Release Authorized
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    
+    <!-- Main Content -->
+    <tr>
+      <td style="padding: 30px 30px 40px 30px;">
+        <p style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.6; color: #1f2937; font-weight: 500;">Hi ${buyerName},</p>
         
-        <div style="background: #fff; padding: 30px; border: 1px solid #e5e5e5; border-top: none; border-radius: 0 0 12px 12px;">
-          <div style="text-align: center; margin-bottom: 20px;">
-            <div style="display: inline-block; background: #d4edda; color: #155724; padding: 10px 20px; border-radius: 50px; font-weight: 600;">
-              ✓ Signature Release Authorized
-            </div>
-          </div>
-          
-          <p style="font-size: 18px; margin-top: 0;">Hi ${buyerName},</p>
-          
-          <p>You have successfully authorized the carrier to release your package without requiring a signature at delivery.</p>
-          
-          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 0 0 10px 0;"><strong>Tracking Number:</strong> ${trackingNumber}</p>
-            <p style="margin: 0 0 10px 0;"><strong>Carrier:</strong> ${carrier}</p>
-            <p style="margin: 0;"><strong>Authorized by:</strong> ${typedName}</p>
-          </div>
-          
-          <div style="background: #e7f3ff; border-left: 4px solid #0066cc; padding: 15px; margin: 20px 0;">
-            <p style="margin: 0; font-size: 14px;">
-              <strong>What happens next?</strong><br>
-              The carrier will leave your package at your delivery address without requiring a signature. Please ensure a safe delivery location is available.
-            </p>
-          </div>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${statusUrl}" style="display: inline-block; background: #4f46e5; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-              View Shipment Status
-            </a>
-          </div>
-          
-          <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 30px 0;">
-          
-          <p style="font-size: 12px; color: #999; margin: 0;">
-            This email was sent by ${APP_NAME} on behalf of ${merchantName}.
-          </p>
-        </div>
-      </body>
-    </html>
+        <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+          You have successfully authorized the carrier to release your package without requiring a signature at delivery.
+        </p>
+        
+        <!-- Tracking Info Card -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+          <tr>
+            <td style="padding: 20px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="padding: 0 0 12px 0;">
+                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Tracking Number</p>
+                    <p style="margin: 8px 0 0 0; font-size: 18px; font-family: 'Courier New', monospace; font-weight: 600; color: #1f2937; word-break: break-all;">${trackingNumber}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Carrier</p>
+                    <p style="margin: 8px 0 0 0; font-size: 16px; font-weight: 500; color: #1f2937;">${carrier}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0 0 0; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Authorized by</p>
+                    <p style="margin: 8px 0 0 0; font-size: 16px; font-weight: 500; color: #1f2937;">${typedName}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        
+        <!-- Info Box -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #eff6ff; border-left: 4px solid #2563eb; border-radius: 6px;">
+          <tr>
+            <td style="padding: 16px 20px;">
+              <p style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #1e40af;">
+                What happens next?
+              </p>
+              <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #1e3a8a;">
+                The carrier will leave your package at your delivery address without requiring a signature. Please ensure a safe delivery location is available.
+              </p>
+            </td>
+          </tr>
+        </table>
+        
+        <!-- CTA Button -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0;">
+          <tr>
+            <td align="center" style="padding: 0;">
+              <a href="${statusUrl}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);">
+                View Shipment Status
+              </a>
+            </td>
+          </tr>
+        </table>
+        
+        <!-- Divider -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
+          <tr>
+            <td style="border-top: 1px solid #e5e7eb;"></td>
+          </tr>
+        </table>
+        
+        <!-- Footer -->
+        <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center;">
+          This email was sent by <strong style="color: #6b7280;">${APP_NAME}</strong> on behalf of ${merchantName}.
+        </p>
+      </td>
+    </tr>
   `;
+  
+  const html = getEmailTemplate(content);
 
   const text = `
 Hi ${buyerName},
@@ -288,60 +466,105 @@ export async function sendCutoffLockedEmail({
   
   const subject = `Your ${merchantName} package is out for delivery`;
   
-  const html = `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 30px; border-radius: 12px 12px 0 0;">
-          <h1 style="color: #fff; margin: 0; font-size: 24px;">${APP_NAME}</h1>
-        </div>
+  const content = `
+    <!-- Header -->
+    <tr>
+      <td style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px 30px; text-align: center;">
+        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">${APP_NAME}</h1>
+      </td>
+    </tr>
+    
+    <!-- Delivery Badge -->
+    <tr>
+      <td style="padding: 30px 30px 0 30px; text-align: center;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto; background-color: #dbeafe; border-radius: 50px; padding: 12px 24px;">
+          <tr>
+            <td>
+              <p style="margin: 0; font-size: 15px; font-weight: 600; color: #1e40af; letter-spacing: 0.3px;">
+                🚚 Out for Delivery
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    
+    <!-- Main Content -->
+    <tr>
+      <td style="padding: 30px 30px 40px 30px;">
+        <p style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.6; color: #1f2937; font-weight: 500;">Hi ${buyerName},</p>
         
-        <div style="background: #fff; padding: 30px; border: 1px solid #e5e5e5; border-top: none; border-radius: 0 0 12px 12px;">
-          <div style="text-align: center; margin-bottom: 20px;">
-            <div style="display: inline-block; background: #cce5ff; color: #004085; padding: 10px 20px; border-radius: 50px; font-weight: 600;">
-              🚚 Out for Delivery
-            </div>
-          </div>
-          
-          <p style="font-size: 18px; margin-top: 0;">Hi ${buyerName},</p>
-          
-          <p>Your package from <strong>${merchantName}</strong> is out for delivery and will arrive today!</p>
-          
-          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 0 0 10px 0;"><strong>Tracking Number:</strong> ${trackingNumber}</p>
-            <p style="margin: 0;"><strong>Carrier:</strong> ${carrier}</p>
-          </div>
-          
-          <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
-            <p style="margin: 0; font-weight: 600;">⚠️ Signature Required at Delivery</p>
-            <p style="margin: 10px 0 0 0; font-size: 14px;">
-              This package requires a signature. Since it's already out for delivery, the signature release option is no longer available. Please ensure someone is available to sign for the package.
-            </p>
-          </div>
-          
-          <p style="font-size: 14px; color: #666;">
-            If you miss the delivery, the carrier will leave a notice with instructions for rescheduling or pickup.
-          </p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${statusUrl}" style="display: inline-block; background: #4f46e5; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-              Track Your Package
-            </a>
-          </div>
-          
-          <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 30px 0;">
-          
-          <p style="font-size: 12px; color: #999; margin: 0;">
-            This email was sent by ${APP_NAME} on behalf of ${merchantName}.
-          </p>
-        </div>
-      </body>
-    </html>
+        <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+          Your package from <strong style="color: #1f2937;">${merchantName}</strong> is out for delivery and will arrive today!
+        </p>
+        
+        <!-- Tracking Info Card -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+          <tr>
+            <td style="padding: 20px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="padding: 0 0 12px 0;">
+                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Tracking Number</p>
+                    <p style="margin: 8px 0 0 0; font-size: 18px; font-family: 'Courier New', monospace; font-weight: 600; color: #1f2937; word-break: break-all;">${trackingNumber}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0 0 0; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Carrier</p>
+                    <p style="margin: 8px 0 0 0; font-size: 16px; font-weight: 500; color: #1f2937;">${carrier}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        
+        <!-- Warning Alert -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 6px;">
+          <tr>
+            <td style="padding: 16px 20px;">
+              <p style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #92400e;">
+                ⚠️ Signature Required at Delivery
+              </p>
+              <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #78350f;">
+                This package requires a signature. Since it's already out for delivery, the signature release option is no longer available. Please ensure someone is available to sign for the package.
+              </p>
+            </td>
+          </tr>
+        </table>
+        
+        <p style="margin: 0 0 30px 0; font-size: 14px; line-height: 1.6; color: #6b7280;">
+          If you miss the delivery, the carrier will leave a notice with instructions for rescheduling or pickup.
+        </p>
+        
+        <!-- CTA Button -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0;">
+          <tr>
+            <td align="center" style="padding: 0;">
+              <a href="${statusUrl}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);">
+                Track Your Package
+              </a>
+            </td>
+          </tr>
+        </table>
+        
+        <!-- Divider -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
+          <tr>
+            <td style="border-top: 1px solid #e5e7eb;"></td>
+          </tr>
+        </table>
+        
+        <!-- Footer -->
+        <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center;">
+          This email was sent by <strong style="color: #6b7280;">${APP_NAME}</strong> on behalf of ${merchantName}.
+        </p>
+      </td>
+    </tr>
   `;
+  
+  const html = getEmailTemplate(content);
 
   const text = `
 Hi ${buyerName},
@@ -385,4 +608,3 @@ This email was sent by ${APP_NAME} on behalf of ${merchantName}.
     throw error;
   }
 }
-

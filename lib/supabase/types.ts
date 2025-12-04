@@ -19,6 +19,14 @@ export type Database = {
           stripe_account_id: string | null
           shop_domain: string | null
           access_token: string | null
+          ups_api_key: string | null
+          ups_username: string | null
+          ups_password: string | null
+          ups_account_number: string | null
+          fedex_api_key: string | null
+          fedex_secret_key: string | null
+          fedex_account_number: string | null
+          fedex_meter_number: string | null
           created_at: string
           updated_at: string
         }
@@ -31,6 +39,14 @@ export type Database = {
           stripe_account_id?: string | null
           shop_domain?: string | null
           access_token?: string | null
+          ups_api_key?: string | null
+          ups_username?: string | null
+          ups_password?: string | null
+          ups_account_number?: string | null
+          fedex_api_key?: string | null
+          fedex_secret_key?: string | null
+          fedex_account_number?: string | null
+          fedex_meter_number?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -43,6 +59,14 @@ export type Database = {
           stripe_account_id?: string | null
           shop_domain?: string | null
           access_token?: string | null
+          ups_api_key?: string | null
+          ups_username?: string | null
+          ups_password?: string | null
+          ups_account_number?: string | null
+          fedex_api_key?: string | null
+          fedex_secret_key?: string | null
+          fedex_account_number?: string | null
+          fedex_meter_number?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -62,7 +86,11 @@ export type Database = {
           carrier_status: 'PreTransit' | 'InTransit' | 'OutForDelivery' | 'Delivered'
           override_status: 'none' | 'requested' | 'completed'
           override_token: string | null
+          buyer_status_token: string | null
           stripe_checkout_session_id: string | null
+          stripe_payment_status: string | null
+          merchant_earnings_cents: number | null
+          override_locked: boolean
           created_at: string
           updated_at: string
         }
@@ -79,7 +107,11 @@ export type Database = {
           carrier_status?: 'PreTransit' | 'InTransit' | 'OutForDelivery' | 'Delivered'
           override_status?: 'none' | 'requested' | 'completed'
           override_token?: string | null
+          buyer_status_token?: string | null
           stripe_checkout_session_id?: string | null
+          stripe_payment_status?: string | null
+          merchant_earnings_cents?: number | null
+          override_locked?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -96,7 +128,11 @@ export type Database = {
           carrier_status?: 'PreTransit' | 'InTransit' | 'OutForDelivery' | 'Delivered'
           override_status?: 'none' | 'requested' | 'completed'
           override_token?: string | null
+          buyer_status_token?: string | null
           stripe_checkout_session_id?: string | null
+          stripe_payment_status?: string | null
+          merchant_earnings_cents?: number | null
+          override_locked?: boolean
           created_at?: string
           updated_at?: string
         }

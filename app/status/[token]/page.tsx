@@ -1,222 +1,449 @@
-"use client";
+// app/status/[token]/page.tsx
 
-import { useState } from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Package2, Package, AlertTriangle, CheckCircle, Lock, ShieldCheck } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { notFound } from "next/navigation";
 
-export default function BuyerStatusPage() {
-  const params = useParams();
-  const token = params.token as string;
-  const { toast } = useToast();
-  const [typedName, setTypedName] = useState("");
-  const [agreed, setAgreed] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+import { supabaseService } from "@/lib/supabase";
 
-  // Mock shipment data - in real app this would come from API
-  const shipment = {
-    trackingNumber: "1Z999AA10123456784",
-    carrier: "UPS",
-    carrierStatus: "InTransit" as const,
-    merchantName: "Acme Range",
-    isLocked: false, // Would be true if OutForDelivery
+
+
+type StatusPageProps = {
+
+  params: { token: string };
+
+  searchParams: { success?: string; canceled?: string };
+
+};
+
+
+
+function getSignatureInfo(
+
+  requiresSignature: boolean,
+
+  itemValueCents: number | null
+
+) {
+
+  if (!requiresSignature) {
+
+    return {
+
+      label: "No signature required",
+
+      description:
+
+        "Based on the latest information, this shipment does not require a direct signature.",
+
+    };
+
+  }
+
+
+
+  if (itemValueCents !== null && itemValueCents >= 50000) {
+
+    return {
+
+      label: "Signature required (high-value shipment)",
+
+      description:
+
+        "This package meets the merchant's high-value threshold and is treated as signature required for added protection.",
+
+    };
+
+  }
+
+
+
+  return {
+
+    label: "Signature required",
+
+    description:
+
+      "The carrier or merchant has marked this shipment as requiring a signature at delivery.",
+
   };
 
-  const carrierStatusConfig = {
-    PreTransit: { label: "Pre-Transit", color: "muted" as const, description: "Package label created, awaiting pickup" },
-    InTransit: { label: "In Transit", color: "info" as const, description: "Package is on its way" },
-    OutForDelivery: { label: "Out for Delivery", color: "warning" as const, description: "Package will be delivered today" },
-    Delivered: { label: "Delivered", color: "success" as const, description: "Package has been delivered" },
-  };
-
-  const currentStatus = carrierStatusConfig[shipment.carrierStatus];
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!agreed || !typedName) return;
-    setSubmitted(true);
-    toast({
-      title: "Signature authorization submitted",
-      description: "Your package delivery has been authorized.",
-    });
-  };
-
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-primary text-primary-foreground py-4 px-6">
-        <Link href="/" className="max-w-2xl mx-auto flex items-center gap-3">
-          <Package2 className="h-6 w-6 text-accent" />
-          <span className="font-display font-bold">PreSign</span>
-        </Link>
-      </header>
-
-      <main className="max-w-2xl mx-auto px-6 py-8 space-y-6">
-        {/* Shipment Info Card */}
-        <div className="bg-card rounded-xl border border-border shadow-md p-6 space-y-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Tracking Number</p>
-              <p className="font-mono text-lg font-semibold text-foreground">
-                {shipment.trackingNumber}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Package className="h-5 w-5 text-muted-foreground" />
-              <span className="font-medium text-foreground">{shipment.carrier}</span>
-            </div>
-          </div>
-
-          {/* Status */}
-          <div className="bg-muted/50 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium text-foreground">Carrier Status</p>
-              <Badge variant={currentStatus.color}>{currentStatus.label}</Badge>
-            </div>
-            <p className="text-sm text-muted-foreground">{currentStatus.description}</p>
-
-            {/* Progress */}
-            <div className="mt-4 flex items-center gap-2">
-              {["PreTransit", "InTransit", "OutForDelivery", "Delivered"].map((status, index) => {
-                const statuses = ["PreTransit", "InTransit", "OutForDelivery", "Delivered"];
-                const currentIndex = statuses.indexOf(shipment.carrierStatus);
-                const isComplete = index <= currentIndex;
-                return (
-                  <div key={status} className="flex-1 flex items-center gap-2">
-                    <div
-                      className={`h-2 flex-1 rounded-full ${
-                        isComplete ? "bg-success" : "bg-border"
-                      }`}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="text-sm text-muted-foreground">
-            Shipped by <span className="font-medium text-foreground">{shipment.merchantName}</span>
-          </div>
-        </div>
-
-        {/* Override Form */}
-        {!submitted ? (
-          <div className="bg-card rounded-xl border border-border shadow-md p-6 space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-xl bg-accent/10 flex items-center justify-center">
-                <ShieldCheck className="h-6 w-6 text-accent" />
-              </div>
-              <div>
-                <h2 className="font-display text-xl font-bold text-foreground">
-                  Remote Signature Release
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  Authorize delivery without requiring an in-person signature
-                </p>
-              </div>
-            </div>
-
-            {shipment.isLocked ? (
-              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-start gap-3">
-                <Lock className="h-5 w-5 text-destructive mt-0.5" />
-                <div>
-                  <p className="font-medium text-destructive">Override Locked</p>
-                  <p className="text-sm text-muted-foreground">
-                    This shipment is out for delivery. Signature release cannot be modified at this time.
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="bg-warning/10 border border-warning/20 rounded-lg p-4 flex items-start gap-3">
-                  <AlertTriangle className="h-5 w-5 text-warning mt-0.5" />
-                  <div>
-                    <p className="font-medium text-warning">$2.99 Service Fee</p>
-                    <p className="text-sm text-muted-foreground">
-                      A one-time fee is required to authorize signature release for this shipment.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="typedName">Type Your Full Legal Name</Label>
-                  <Input
-                    id="typedName"
-                    placeholder="John Smith"
-                    value={typedName}
-                    onChange={(e) => setTypedName(e.target.value)}
-                    className="h-12 text-lg"
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    This serves as your electronic signature authorizing delivery without an in-person signature.
-                  </p>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <Checkbox
-                    id="agree"
-                    checked={agreed}
-                    onCheckedChange={(checked) => setAgreed(checked as boolean)}
-                    className="mt-1"
-                  />
-                  <Label htmlFor="agree" className="text-sm text-muted-foreground leading-relaxed">
-                    I authorize {shipment.carrier} to release this package without obtaining a signature. 
-                    I understand that once delivered, I assume full responsibility for the package.
-                  </Label>
-                </div>
-
-                <Button
-                  type="submit"
-                  variant="accent"
-                  className="w-full h-12 text-base gap-2"
-                  disabled={!agreed || !typedName}
-                >
-                  Pay $2.99 & Authorize Release
-                </Button>
-
-                <p className="text-xs text-center text-muted-foreground">
-                  Your IP address and timestamp will be recorded for verification purposes.
-                </p>
-              </form>
-            )}
-          </div>
-        ) : (
-          <div className="bg-success/5 border border-success/20 rounded-xl p-6 text-center space-y-4">
-            <div className="h-16 w-16 rounded-full bg-success/10 flex items-center justify-center mx-auto">
-              <CheckCircle className="h-8 w-8 text-success" />
-            </div>
-            <div>
-              <h2 className="font-display text-xl font-bold text-foreground">
-                Authorization Complete
-              </h2>
-              <p className="text-muted-foreground mt-1">
-                Your signature release has been successfully submitted.
-              </p>
-            </div>
-            <div className="bg-card rounded-lg p-4 text-left">
-              <p className="text-sm text-muted-foreground mb-1">Authorized by</p>
-              <p className="font-medium text-foreground">{typedName}</p>
-              <p className="text-xs text-muted-foreground mt-2">
-                Timestamp: {new Date().toLocaleString()}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Footer */}
-        <div className="text-center text-sm text-muted-foreground">
-          <p>Questions? Contact {shipment.merchantName} for support.</p>
-          <p className="mt-2">Powered by PreSign</p>
-        </div>
-      </main>
-    </div>
-  );
 }
 
+
+
+export default async function StatusPage({ params, searchParams }: StatusPageProps) {
+
+  const token = params.token;
+
+  const isSuccess = searchParams?.success === "true";
+
+  const isCanceled = searchParams?.canceled === "true";
+
+
+
+  const { data: shipment, error } = await supabaseService
+
+    .from("shipments")
+
+    .select(
+
+      `
+
+      id,
+
+      buyer_name,
+
+      tracking_number,
+
+      carrier,
+
+      carrier_status,
+
+      requires_signature,
+
+      override_locked,
+
+      override_status,
+
+      item_value_cents
+
+    `
+
+    )
+
+    .eq("buyer_status_token", token)
+
+    .maybeSingle();
+
+
+
+  if (error) {
+
+    console.error("[status page] Error loading shipment", error);
+
+    throw new Error("Failed to load shipment status");
+
+  }
+
+
+
+  if (!shipment) {
+
+    notFound();
+
+  }
+
+
+
+  const {
+
+    buyer_name,
+
+    tracking_number,
+
+    carrier,
+
+    carrier_status,
+
+    requires_signature,
+
+    override_locked,
+
+    override_status,
+
+    item_value_cents,
+
+  } = shipment;
+
+
+
+  const sigInfo = getSignatureInfo(
+
+    requires_signature,
+
+    item_value_cents ?? null
+
+  );
+
+
+
+  const canOverride =
+
+    requires_signature === true &&
+
+    override_locked === false &&
+
+    override_status === "none";
+
+
+
+  return (
+
+    <main className="min-h-screen bg-slate-50 flex justify-center px-4 py-10">
+
+      <div className="w-full max-w-xl bg-white shadow-sm rounded-xl border border-slate-200 p-6 space-y-6">
+
+        {isSuccess && (
+
+          <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3">
+
+            <div className="flex items-start gap-3">
+
+              <div className="flex-shrink-0">
+
+                <svg className="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+
+                </svg>
+
+              </div>
+
+              <div className="flex-1">
+
+                <h3 className="text-sm font-semibold text-green-900">Payment Successful!</h3>
+
+                <p className="mt-1 text-sm text-green-800">
+
+                  Your signature release authorization has been processed. You&apos;ll receive a confirmation email shortly, and the carrier will be notified to leave your package without requiring a signature.
+
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        )}
+
+
+
+        {isCanceled && (
+
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+
+            <div className="flex items-start gap-3">
+
+              <div className="flex-shrink-0">
+
+                <svg className="h-5 w-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+
+                </svg>
+
+              </div>
+
+              <div className="flex-1">
+
+                <h3 className="text-sm font-semibold text-amber-900">Payment Canceled</h3>
+
+                <p className="mt-1 text-sm text-amber-800">
+
+                  Your payment was canceled. You can try again when you&apos;re ready. The authorization form is still available below.
+
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        )}
+
+
+
+        <header className="space-y-1">
+
+          <p className="text-sm text-slate-500">Delivery status for</p>
+
+          <h1 className="text-xl font-semibold text-slate-900">
+
+            {buyer_name || "Your package"}
+
+          </h1>
+
+        </header>
+
+
+
+        <section className="space-y-2">
+
+          <h2 className="text-sm font-medium text-slate-700">
+
+            Shipment details
+
+          </h2>
+
+          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm space-y-1">
+
+            <p>
+
+              <span className="font-medium">Tracking #:</span>{" "}
+
+              {tracking_number || "—"}
+
+            </p>
+
+            <p>
+
+              <span className="font-medium">Carrier:</span>{" "}
+
+              {carrier || "—"}
+
+            </p>
+
+            <p>
+
+              <span className="font-medium">Carrier status:</span>{" "}
+
+              {carrier_status || "Unknown"}
+
+            </p>
+
+          </div>
+
+        </section>
+
+
+
+        <section className="space-y-2">
+
+          <h2 className="text-sm font-medium text-slate-700">
+
+            Signature requirement
+
+          </h2>
+
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm space-y-1">
+
+            <p className="font-semibold text-amber-900">{sigInfo.label}</p>
+
+            <p className="text-amber-900/80">{sigInfo.description}</p>
+
+            {override_locked && (
+
+              <p className="text-xs text-amber-900/70 mt-1">
+
+                Delivery is already in progress or completed, so changes to the
+
+                signature requirement are now locked.
+
+              </p>
+
+            )}
+
+          </div>
+
+        </section>
+
+
+
+        {canOverride ? (
+
+          <section className="space-y-3">
+
+            <h2 className="text-sm font-medium text-slate-700">
+
+              Authorize delivery release
+
+            </h2>
+
+            <p className="text-sm text-slate-600">
+
+              If you won&apos;t be available to sign in person, you can
+
+              authorize the carrier to leave your package for a one-time fee of{" "}
+
+              <span className="font-semibold">$2.99</span>. You&apos;ll be
+
+              asked to type your full name and complete a secure payment.
+
+            </p>
+
+
+
+            {/* This assumes you have /api/buyer/start implemented to:
+
+                - Validate token
+
+                - Store auth name + IP
+
+                - Create Stripe Checkout Session
+
+                - Redirect buyer to Stripe
+
+            */}
+
+            <form
+
+              action="/api/buyer/start"
+
+              method="POST"
+
+              className="space-y-2"
+
+            >
+
+              <input type="hidden" name="token" value={token} />
+
+              <label className="block text-sm text-slate-700">
+
+                Full name for authorization
+
+                <input
+
+                  name="auth_name"
+
+                  required
+
+                  className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900"
+
+                  placeholder="Type your full name"
+
+                />
+
+              </label>
+
+              <button
+
+                type="submit"
+
+                className="w-full mt-2 inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-60 disabled:cursor-not-allowed"
+
+              >
+
+                Authorize Delivery — $2.99
+
+              </button>
+
+            </form>
+
+          </section>
+
+        ) : (
+
+          <section className="space-y-2">
+
+            <p className="text-sm text-slate-500">
+
+              There is currently no changeable signature authorization available
+
+              for this shipment. It will be delivered according to the
+
+              carrier&apos;s normal process.
+
+            </p>
+
+          </section>
+
+        )}
+
+      </div>
+
+    </main>
+
+  );
+
+}
