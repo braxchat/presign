@@ -26,9 +26,24 @@ export default function SignupPage() {
     dailyUpdateTime: "",
     agreeTerms: false,
   });
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    // Validate password length
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+
     // Handle signup logic - will be connected to Supabase
     router.push("/merchant/dashboard");
   };
@@ -110,6 +125,10 @@ export default function SignupPage() {
             />
           </div>
         </div>
+
+        {error && (
+          <p className="text-sm text-destructive">{error}</p>
+        )}
 
         <div className="space-y-2">
           <Label htmlFor="carrierPreference">Carrier Preference</Label>

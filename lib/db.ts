@@ -338,7 +338,10 @@ export async function updatePayoutStatus(
   status: 'pending' | 'processing' | 'completed' | 'failed',
   paidAt?: string
 ): Promise<Payout> {
-  const updates: { status: string; paid_at?: string } = { status };
+  const updates: { 
+    status: 'pending' | 'processing' | 'completed' | 'failed'; 
+    paid_at?: string 
+  } = { status };
   
   if (paidAt) {
     updates.paid_at = paidAt;

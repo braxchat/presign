@@ -40,6 +40,7 @@ export type Database = {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       shipments: {
         Row: {
@@ -93,6 +94,15 @@ export type Database = {
           created_at?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "shipments_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       signature_authorizations: {
         Row: {
@@ -119,6 +129,15 @@ export type Database = {
           user_agent?: string | null
           created_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "signature_authorizations_shipment_id_fkey"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       payouts: {
         Row: {
@@ -148,6 +167,15 @@ export type Database = {
           requested_at?: string
           paid_at?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "payouts_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {
