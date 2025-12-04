@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Package, User, CreditCard, Clock, CheckCircle } from "lucide-react";
+import { X, Package, User, CreditCard, Clock, CheckCircle, FileText, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShipmentStatusBadge } from "./ShipmentStatusBadge";
@@ -19,6 +19,7 @@ interface ShipmentDrawerProps {
     overrideStatus: "none" | "requested" | "completed";
     requiresSignature: boolean;
     createdAt: string;
+    authorization_pdf_url?: string | null;
     signatureAuth?: {
       typedName: string;
       ip: string;
@@ -161,6 +162,45 @@ export function ShipmentDrawer({ isOpen, onClose, shipment }: ShipmentDrawerProp
                 </Badge>
               </div>
             </div>
+
+            {/* Authorization PDF */}
+            {shipment.overrideStatus === "completed" && shipment.authorization_pdf_url ? (
+              <div className="bg-accent/5 border border-accent/20 rounded-xl p-4 space-y-3">
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <FileText className="h-4 w-4 text-accent" />
+                  Buyer Authorization Document
+                </div>
+                <a
+                  href={shipment.authorization_pdf_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  <Download className="h-4 w-4" />
+                  Download Buyer Authorization (PDF)
+                </a>
+              </div>
+            ) : shipment.overrideStatus === "completed" && !shipment.authorization_pdf_url ? (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-amber-900">
+                  <FileText className="h-4 w-4 text-amber-600" />
+                  Authorization PDF
+                </div>
+                <p className="text-sm text-amber-800">
+                  PDF will be available after the buyer completes authorization.
+                </p>
+              </div>
+            ) : (
+              <div className="bg-secondary/50 rounded-xl p-4 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  Authorization PDF
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  PDF will be available after the buyer completes authorization.
+                </p>
+              </div>
+            )}
 
             {/* Timeline */}
             <div className="space-y-3">

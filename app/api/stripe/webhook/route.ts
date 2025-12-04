@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import Stripe from 'stripe';
 import { headers } from 'next/headers';
-import { sendOverrideConfirmationEmail } from '@/lib/email';
+import { sendOverrideConfirmationEmail, sendAuthorizationPdfToMerchant } from '@/lib/email';
+import { createAuthorizationPdf } from '@/lib/pdf';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2025-11-17.clover',
@@ -56,18 +57,18 @@ export async function POST(request: NextRequest) {
       // Get merchant info
       const { data: merchant } = await supabaseAdmin
         .from('merchants')
-        .select('business_name')
+        .select('email, business_name')
         .eq('id', shipment.merchant_id)
         .single();
 
       // Extract metadata for signature authorization
       const authName = session.metadata?.auth_name;
       const authIp = session.metadata?.auth_ip;
-      const authTimestamp = session.metadata?.auth_timestamp;
+      const authTimestampFromMetadata = session.metadata?.auth_timestamp;
       const userAgent = session.metadata?.user_agent;
 
-      // Create signature authorization record
-      if (authName && authIp && authTimestamp) {
+      // Create signature authorization record only if all required metadata exists
+      if (authName && authIp && authTimestampFromMetadata) {
         const { error: authError } = await supabaseAdmin
           .from('signature_authorizations')
           .insert({
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
             typed_name: authName,
             ip_address: authIp,
             user_agent: userAgent || null,
-            created_at: authTimestamp,
+            created_at: authTimestampFromMetadata,
           });
 
         if (authError) {
@@ -83,15 +84,41 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Update shipment: mark payment as paid, set override status, set merchant earnings
+      // Generate authorization PDF
+      // Use metadata timestamp if available, otherwise fallback to current time
+      const authTimestampForPdf = authTimestampFromMetadata || new Date().toISOString();
+      let pdfUrl: string | null = null;
+      try {
+        pdfUrl = await createAuthorizationPdf({
+          shipmentId: shipment.id,
+          buyerName: shipment.buyer_name,
+          buyerEmail: shipment.buyer_email,
+          merchantName: merchant?.business_name || null,
+          trackingNumber: shipment.tracking_number,
+          carrier: shipment.carrier,
+          orderId: shipment.order_number,
+          authTimestamp: authTimestampForPdf,
+          buyerIp: authIp || null,
+        });
+
+        if (!pdfUrl) {
+          console.error('Failed to generate authorization PDF');
+        }
+      } catch (pdfError) {
+        console.error('Error generating authorization PDF:', pdfError);
+        // Continue with webhook processing even if PDF generation fails
+      }
+
+      // Update shipment: mark payment as paid, set override status to completed, set merchant earnings, store PDF URL
       const merchantEarningsCents = 100; // $1.00 per override
       
       const { error: updateError } = await supabaseAdmin
         .from('shipments')
         .update({
           stripe_payment_status: 'paid',
-          override_status: 'requested',
+          override_status: 'completed',
           merchant_earnings_cents: merchantEarningsCents,
+          authorization_pdf_url: pdfUrl,
           updated_at: new Date().toISOString(),
         })
         .eq('id', shipment.id);
@@ -117,7 +144,7 @@ export async function POST(request: NextRequest) {
         // Don't fail the webhook if payout creation fails
       }
 
-      // Send override confirmation email
+      // Send override confirmation email to buyer
       try {
         await sendOverrideConfirmationEmail({
           buyerEmail: shipment.buyer_email,
@@ -125,12 +152,38 @@ export async function POST(request: NextRequest) {
           trackingNumber: shipment.tracking_number,
           carrier: shipment.carrier,
           merchantName: merchant?.business_name || 'Merchant',
-          buyerToken: shipment.override_token || '',
+          buyerToken: shipment.buyer_status_token || shipment.override_token || '',
           typedName: authName || shipment.buyer_name,
         });
       } catch (emailError) {
         console.error('Failed to send override confirmation email:', emailError);
         // Don't fail the webhook if email fails
+      }
+
+      // Send authorization PDF email to merchant
+      if (pdfUrl && merchant?.email) {
+        try {
+          await sendAuthorizationPdfToMerchant({
+            merchantEmail: merchant.email,
+            merchantName: merchant.business_name,
+            buyerName: shipment.buyer_name,
+            trackingNumber: shipment.tracking_number,
+            carrier: shipment.carrier,
+            orderId: shipment.order_number,
+            pdfUrl,
+            dashboardUrl: `${process.env.APP_BASE_URL || process.env.SHOPIFY_APP_URL || ''}/merchant/dashboard`,
+          });
+        } catch (merchantEmailError) {
+          console.error('Failed to send merchant authorization email:', merchantEmailError);
+          // Don't fail the webhook if merchant email fails
+        }
+      } else {
+        if (!pdfUrl) {
+          console.warn('PDF URL not available, skipping merchant email');
+        }
+        if (!merchant?.email) {
+          console.warn('Merchant email not available, skipping merchant email');
+        }
       }
 
       console.log('Checkout completed for shipment:', shipment.id);

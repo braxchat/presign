@@ -70,7 +70,7 @@ export default function SignupPage() {
           <Label htmlFor="businessName">Business Name</Label>
           <Input
             id="businessName"
-            placeholder="Acme Firearms & Range"
+            placeholder="Acme Store"
             value={formData.businessName}
             onChange={(e) =>
               setFormData({ ...formData, businessName: e.target.value })

@@ -3,8 +3,8 @@ import "@/styles/globals.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "PreSign - Remote Signature Release for Gun & Ammo Merchants",
-  description: "Streamline your FFL shipments with automated signature release management. Increase delivery success rates and earn $1.00 per override.",
+  title: "PreSign - Reduce Failed Deliveries for Signature-Required Packages",
+  description: "Give customers a simple, secure way to authorize delivery before the carrier arrives. Reduce failed delivery attempts and increase customer satisfaction.",
   icons: {
     icon: "/favicon.ico",
   },

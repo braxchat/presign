@@ -26,7 +26,7 @@ export default function AuthLayout({
             <span className="text-accent">Made Simple</span>
           </h1>
           <p className="text-primary-foreground/70 text-lg max-w-md">
-            Streamline your FFL shipments with automated signature release management. 
+            Reduce failed deliveries for signature-required packages with automated authorization management. 
             Increase delivery success rates and earn more per shipment.
           </p>
           <div className="mt-12 grid grid-cols-3 gap-6">

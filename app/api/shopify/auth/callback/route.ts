@@ -65,6 +65,20 @@ export async function GET(request: NextRequest) {
     const shopDomain = session.shop;
     const accessToken = session.accessToken;
 
+    // Fetch merchant email and shop name from Shopify
+    const client = new shopify.clients.Rest({ session });
+    let merchantEmail: string | null = null;
+    let merchantName: string | null = null;
+
+    try {
+      const shopInfo = await client.get({ path: 'shop' });
+      merchantEmail = (shopInfo.body as any)?.shop?.email || null;
+      merchantName = (shopInfo.body as any)?.shop?.name || null;
+    } catch (error) {
+      console.error('Failed to fetch shop info from Shopify:', error);
+      // Continue with OAuth flow even if shop info fetch fails
+    }
+
     // Upsert merchant in Supabase
     const { error: upsertError } = await supabaseAdmin
       .from('merchants')
@@ -72,6 +86,8 @@ export async function GET(request: NextRequest) {
         {
           shop_domain: shopDomain,
           access_token: accessToken,
+          business_name: merchantName || undefined,
+          email: merchantEmail || undefined,
           updated_at: new Date().toISOString(),
         },
         {

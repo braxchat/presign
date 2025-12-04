@@ -24,6 +24,7 @@ interface Shipment {
   buyer_name: string;
   carrier_status: 'PreTransit' | 'InTransit' | 'OutForDelivery' | 'Delivered';
   override_status: 'none' | 'requested' | 'completed';
+  authorization_pdf_url: string | null;
 }
 
 interface Stats {
@@ -239,6 +240,9 @@ export default function DashboardPage() {
                     <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3">
                       Override
                     </th>
+                    <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3">
+                      Authorization PDF
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -273,6 +277,20 @@ export default function DashboardPage() {
                           type="override"
                           status={shipment.override_status}
                         />
+                      </td>
+                      <td className="px-6 py-4">
+                        {shipment.override_status === 'completed' && shipment.authorization_pdf_url ? (
+                          <a
+                            href={shipment.authorization_pdf_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 underline text-sm"
+                          >
+                            Download PDF
+                          </a>
+                        ) : (
+                          <span className="text-gray-400 text-sm">—</span>
+                        )}
                       </td>
                     </tr>
                   ))}

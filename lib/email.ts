@@ -608,3 +608,167 @@ This email was sent by ${APP_NAME} on behalf of ${merchantName}.
     throw error;
   }
 }
+
+interface AuthorizationPdfToMerchantParams {
+  merchantEmail: string;
+  merchantName: string | null;
+  buyerName: string;
+  trackingNumber: string | null;
+  carrier: string | null;
+  orderId: string | null;
+  pdfUrl: string;
+  dashboardUrl: string;
+}
+
+/**
+ * Send authorization PDF to merchant via Resend
+ * Includes PDF download link, shipment info, and dashboard link
+ */
+export async function sendAuthorizationPdfToMerchant({
+  merchantEmail,
+  merchantName,
+  buyerName,
+  trackingNumber,
+  carrier,
+  orderId,
+  pdfUrl,
+  dashboardUrl,
+}: AuthorizationPdfToMerchantParams) {
+  if (!merchantEmail) {
+    console.warn('No merchant email provided, skipping email');
+    return;
+  }
+
+  const safeMerchantName = merchantName || 'Merchant';
+  const safeCarrier = carrier || 'Carrier';
+  const safeTracking = trackingNumber || 'N/A';
+  const safeOrderId = orderId || 'N/A';
+
+  const subject = `Buyer Delivery Authorization for Order #${safeOrderId}`;
+
+  const content = `
+    <!-- Header -->
+    <tr>
+      <td style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px 30px; text-align: center;">
+        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">${APP_NAME}</h1>
+      </td>
+    </tr>
+    
+    <!-- Main Content -->
+    <tr>
+      <td style="padding: 40px 30px;">
+        <p style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.6; color: #1f2937; font-weight: 500;">Hello ${safeMerchantName},</p>
+        
+        <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+          Your buyer <strong style="color: #1f2937;">${buyerName}</strong> has completed a remote delivery authorization for:
+        </p>
+        
+        <!-- Shipment Info Card -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+          <tr>
+            <td style="padding: 20px;">
+              <p style="margin: 0 0 12px 0; font-size: 14px; line-height: 1.6; color: #374151;"><strong>Order ID:</strong> ${safeOrderId}</p>
+              <p style="margin: 0 0 12px 0; font-size: 14px; line-height: 1.6; color: #374151;"><strong>Tracking:</strong> ${safeTracking}</p>
+              <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #374151;"><strong>Carrier:</strong> ${safeCarrier}</p>
+            </td>
+          </tr>
+        </table>
+        
+        <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+          You can download the signed authorization PDF here:
+        </p>
+        
+        <!-- PDF Download Button -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0;">
+          <tr>
+            <td align="center" style="padding: 0;">
+              <a href="${pdfUrl}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);">
+                Download Authorization PDF
+              </a>
+            </td>
+          </tr>
+        </table>
+        
+        <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+          Use this document if you need to update delivery instructions with UPS or FedEx.
+        </p>
+        
+        <!-- Divider -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0;">
+          <tr>
+            <td style="border-top: 1px solid #e5e7eb;"></td>
+          </tr>
+        </table>
+        
+        <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+          Manage this shipment and all overrides in your dashboard:
+        </p>
+        
+        <!-- Dashboard Button -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0;">
+          <tr>
+            <td align="center" style="padding: 0;">
+              <a href="${dashboardUrl}" style="display: inline-block; background-color: #1a1a2e; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; box-shadow: 0 4px 6px rgba(26, 26, 46, 0.25);">
+                Open Merchant Dashboard
+              </a>
+            </td>
+          </tr>
+        </table>
+        
+        <!-- Warning Note -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 0 0; background-color: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 6px;">
+          <tr>
+            <td style="padding: 16px 20px;">
+              <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #92400e;">
+                <strong>Note:</strong> This authorization confirms the buyer accepts responsibility for the package after delivery,
+                including loss, theft, or damage. You may still need to update delivery options with the carrier.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  `;
+
+  const html = getEmailTemplate(content);
+
+  const text = `
+Hello ${safeMerchantName},
+
+Your buyer ${buyerName} has completed a remote delivery authorization for:
+
+Order ID: ${safeOrderId}
+Tracking: ${safeTracking}
+Carrier: ${safeCarrier}
+
+Download the signed authorization PDF: ${pdfUrl}
+
+Use this document if you need to update delivery instructions with UPS or FedEx.
+
+Manage this shipment and all overrides in your dashboard: ${dashboardUrl}
+
+Note: This authorization confirms the buyer accepts responsibility for the package after delivery,
+including loss, theft, or damage. You may still need to update delivery options with the carrier.
+  `.trim();
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: `${APP_NAME} <${FROM_EMAIL}>`,
+      to: merchantEmail,
+      subject,
+      html,
+      text,
+    });
+
+    if (error) {
+      console.error('Failed to send merchant authorization email:', error);
+      throw error;
+    }
+
+    console.log('Merchant authorization email sent:', data?.id);
+    return data;
+  } catch (error) {
+    console.error('Error sending merchant authorization email:', error);
+    throw error;
+  }
+}
