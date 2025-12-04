@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { shopify } from '@/lib/shopify';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 
@@ -107,10 +108,20 @@ export async function GET(request: NextRequest) {
       console.error('Webhook registration error:', webhookError);
     }
 
-    // Redirect to merchant dashboard
-    return NextResponse.redirect(
+    // Create redirect response with cookie
+    const response = NextResponse.redirect(
       `${process.env.APP_BASE_URL}/merchant/dashboard`
     );
+    
+    // Set shop cookie for merchant session detection
+    response.cookies.set("shop", shopDomain, {
+      path: "/",
+      httpOnly: false,
+      sameSite: "none",
+      secure: true,
+    });
+
+    return response;
   } catch (error) {
     console.error('Shopify OAuth callback error:', error);
     return NextResponse.redirect(

@@ -99,13 +99,13 @@ export default function MerchantLayout({
                 <p className="text-xs text-sidebar-foreground/60 truncate">merchant@acme.com</p>
               </div>
             </div>
-            <Link
-              href="/login"
+            <a
+              href="/api/auth/logout"
               className="mt-2 flex items-center gap-2 px-3 py-2 text-sm text-sidebar-foreground/70 hover:text-sidebar-foreground rounded-lg hover:bg-sidebar-accent transition-colors"
             >
               <LogOut className="h-4 w-4" />
               Sign out
-            </Link>
+            </a>
           </div>
         </div>
       </aside>

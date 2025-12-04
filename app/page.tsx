@@ -1,7 +1,11 @@
 import { redirect } from "next/navigation";
 import { cookies, headers } from "next/headers";
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ shop?: string }>;
+}) {
   // Check for Shopify shop cookie
   const cookieStore = await cookies();
   const shop = cookieStore.get("shop")?.value;
@@ -12,11 +16,11 @@ export default async function Page() {
   const shopifyHmac = headersList.get("x-shopify-hmac-sha256");
 
   // Check URL params for shop parameter
-  // Note: In server components, we can't access searchParams directly in page.tsx
-  // But we can check headers which is sufficient for iframe detection
+  const params = await searchParams;
+  const shopParam = params?.shop;
 
   // If any Shopify indicator exists, redirect to dashboard
-  if (shop || shopHeader || shopifyHmac) {
+  if (shop || shopHeader || shopifyHmac || shopParam) {
     redirect("/merchant/dashboard");
   }
 
