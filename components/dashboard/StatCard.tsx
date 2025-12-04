@@ -74,7 +74,7 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, variant = 
           <Icon
             className={cn(
               "h-6 w-6",
-              variant === "accent" ? "text-accent" : "text-accent"
+              variant === "accent" ? "text-primary-foreground" : "text-accent"
             )}
           />
         </div>
