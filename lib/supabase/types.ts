@@ -17,16 +17,20 @@ export type Database = {
           carrier_preference: 'ups' | 'fedex' | 'both'
           daily_update_time: string
           stripe_account_id: string | null
+          shop_domain: string | null
+          access_token: string | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
-          business_name: string
-          contact_email: string
+          business_name?: string
+          contact_email?: string
           carrier_preference?: 'ups' | 'fedex' | 'both'
           daily_update_time?: string
           stripe_account_id?: string | null
+          shop_domain?: string | null
+          access_token?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -37,6 +41,8 @@ export type Database = {
           carrier_preference?: 'ups' | 'fedex' | 'both'
           daily_update_time?: string
           stripe_account_id?: string | null
+          shop_domain?: string | null
+          access_token?: string | null
           created_at?: string
           updated_at?: string
         }

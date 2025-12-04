@@ -1,24 +1,45 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient as supabaseCreateClient } from '@supabase/supabase-js';
 import type { Database } from './supabase/types';
 
 // ============================================================================
-// Client-side Supabase client (uses anon key)
-// Safe to use in client components
+// Supabase Client Factory Functions
 // ============================================================================
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 /**
- * Supabase client for client-side usage
- * Uses the anonymous key and respects Row Level Security (RLS)
+ * Creates a Supabase client using the anonymous key
+ * Safe for client-side usage, respects Row Level Security (RLS)
  */
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+export function createClient() {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  }
 
-/**
- * Creates a new Supabase client instance for client-side usage
- * Use this if you need a fresh client instance
- */
-export function createBrowserClient() {
-  return createClient<Database>(supabaseUrl, supabaseAnonKey);
+  return supabaseCreateClient<Database>(supabaseUrl, supabaseAnonKey);
 }
+
+/**
+ * Creates a Supabase client using the service role key
+ * ⚠️ SERVER-SIDE ONLY - bypasses Row Level Security (RLS)
+ * Use only in API routes, server components, or server actions
+ */
+export function createServiceClient() {
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    throw new Error('Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+  }
+
+  return supabaseCreateClient<Database>(supabaseUrl, supabaseServiceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+}
+
+// Legacy export for backwards compatibility
+export const supabase = typeof window !== 'undefined' && supabaseUrl && supabaseAnonKey
+  ? supabaseCreateClient<Database>(supabaseUrl, supabaseAnonKey)
+  : null;
