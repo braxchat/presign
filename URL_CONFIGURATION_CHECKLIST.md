@@ -1,4 +1,4 @@
-# URL Configuration Checklist for https://presign.vercel.app
+# URL Configuration Checklist for https://presign.app
 
 ## ✅ Code Verification
 
@@ -10,7 +10,7 @@ All code files are correctly using environment variables. No hardcoded URLs foun
 - ✅ `/app/api/buyer/start/route.ts` - Uses `process.env.APP_BASE_URL`
 - ✅ `/lib/email.ts` - Uses `process.env.APP_BASE_URL`
 - ✅ `/lib/shopify.ts` - Uses `process.env.SHOPIFY_APP_URL`
-- ✅ `/env.example` - Updated to show `https://presign.vercel.app`
+- ✅ `/env.example` - Updated to show `https://presign.app`
 
 ---
 
@@ -21,8 +21,8 @@ All code files are correctly using environment variables. No hardcoded URLs foun
 Create or update `.env.local` in your project root:
 
 ```env
-SHOPIFY_APP_URL=https://presign.vercel.app
-APP_BASE_URL=https://presign.vercel.app
+SHOPIFY_APP_URL=https://presign.app
+APP_BASE_URL=https://presign.app
 ```
 
 ### 2. Vercel Environment Variables ⚠️ CRITICAL
@@ -30,8 +30,8 @@ APP_BASE_URL=https://presign.vercel.app
 Go to: **Vercel Dashboard → Your Project → Settings → Environment Variables**
 
 Add/Update:
-- `SHOPIFY_APP_URL` = `https://presign.vercel.app`
-- `APP_BASE_URL` = `https://presign.vercel.app`
+- `SHOPIFY_APP_URL` = `https://presign.app`
+- `APP_BASE_URL` = `https://presign.app`
 
 **Then click "Redeploy" to apply changes.**
 
@@ -40,14 +40,14 @@ Add/Update:
 Go to: **Shopify Partners → Your App → App Setup**
 
 Update:
-- **App URL**: `https://presign.vercel.app`
-- **Allowed Redirect URLs**: `https://presign.vercel.app/api/shopify/auth/callback`
+- **App URL**: `https://presign.app`
+- **Allowed Redirect URLs**: `https://presign.app/api/shopify/auth/callback`
 
 ### 4. Shopify Webhooks
 
 Webhooks are automatically registered via code in `/app/api/shopify/auth/callback/route.ts`:
-- `https://presign.vercel.app/api/shopify/fulfillment-created`
-- `https://presign.vercel.app/api/shopify/fulfillment-updated`
+- `https://presign.app/api/shopify/fulfillment-created`
+- `https://presign.app/api/shopify/fulfillment-updated`
 
 These use `process.env.APP_BASE_URL`, so ensure Vercel env vars are set correctly.
 
@@ -62,7 +62,7 @@ Already configured in `/app/api/buyer/start/route.ts`:
 Go to: **Stripe Dashboard → Developers → Webhooks**
 
 Add/Update webhook endpoint:
-- URL: `https://presign.vercel.app/api/stripe/webhook`
+- URL: `https://presign.app/api/stripe/webhook`
 - Events: `checkout.session.completed`
 
 ### 6. Resend Email Service
@@ -75,10 +75,12 @@ return `${baseUrl}/status/${buyerToken}`;
 
 Ensure `APP_BASE_URL` is set in Vercel.
 
+**Default FROM_EMAIL**: `notify@presign.app` (configurable via `FROM_EMAIL` env var)
+
 ### 7. Buyer Status Page
 
 Status page routes are:
-- `https://presign.vercel.app/status/{buyer_status_token}`
+- `https://presign.app/status/{buyer_status_token}`
 
 This is automatically correct if `APP_BASE_URL` is set.
 
@@ -86,13 +88,14 @@ This is automatically correct if `APP_BASE_URL` is set.
 
 ## ✅ Final Verification Checklist
 
-- [ ] `.env.local` has `SHOPIFY_APP_URL=https://presign.vercel.app`
-- [ ] `.env.local` has `APP_BASE_URL=https://presign.vercel.app`
+- [ ] `.env.local` has `SHOPIFY_APP_URL=https://presign.app`
+- [ ] `.env.local` has `APP_BASE_URL=https://presign.app`
 - [ ] Vercel Environment Variables updated with both URLs
 - [ ] Vercel project redeployed after env var changes
-- [ ] Shopify App URL set to `https://presign.vercel.app`
-- [ ] Shopify Redirect URL set to `https://presign.vercel.app/api/shopify/auth/callback`
-- [ ] Stripe webhook endpoint set to `https://presign.vercel.app/api/stripe/webhook`
+- [ ] Shopify App URL set to `https://presign.app`
+- [ ] Shopify Redirect URL set to `https://presign.app/api/shopify/auth/callback`
+- [ ] Stripe webhook endpoint set to `https://presign.app/api/stripe/webhook`
+- [ ] Resend FROM_EMAIL configured (default: `notify@presign.app`)
 - [ ] Resend domain verified (if using custom domain)
 
 ---

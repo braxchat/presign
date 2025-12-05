@@ -129,19 +129,24 @@ export async function POST(request: NextRequest) {
       }
 
       // Create payout row for merchant
-      const { error: payoutError } = await supabaseAdmin
-        .from('payouts')
-        .insert({
-          merchant_id: shipment.merchant_id,
-          amount_cents: merchantEarningsCents,
-          override_count: 1,
-          status: 'pending',
-          requested_at: new Date().toISOString(),
-        });
+      // Only create payout if refund_status is 'none' (no refund requested)
+      if (shipment.refund_status === 'none' || !shipment.refund_status) {
+        const { error: payoutError } = await supabaseAdmin
+          .from('payouts')
+          .insert({
+            merchant_id: shipment.merchant_id,
+            amount_cents: merchantEarningsCents,
+            override_count: 1,
+            status: 'pending',
+            requested_at: new Date().toISOString(),
+          });
 
-      if (payoutError) {
-        console.error('Failed to create payout:', payoutError);
-        // Don't fail the webhook if payout creation fails
+        if (payoutError) {
+          console.error('Failed to create payout:', payoutError);
+          // Don't fail the webhook if payout creation fails
+        }
+      } else {
+        console.log(`Skipping payout creation for shipment ${shipment.id} - refund_status is ${shipment.refund_status}`);
       }
 
       // Send override confirmation email to buyer

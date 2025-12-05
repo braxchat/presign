@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 
 import { supabaseService } from "@/lib/supabase";
 
+import { RefundRequestForm } from "./refund-request-form";
+
 
 
 type StatusPageProps = {
@@ -92,6 +94,8 @@ export default async function StatusPage({ params, searchParams }: StatusPagePro
 
       buyer_name,
 
+      buyer_email,
+
       tracking_number,
 
       carrier,
@@ -103,6 +107,8 @@ export default async function StatusPage({ params, searchParams }: StatusPagePro
       override_locked,
 
       override_status,
+
+      refund_status,
 
       item_value_cents
 
@@ -138,6 +144,8 @@ export default async function StatusPage({ params, searchParams }: StatusPagePro
 
     buyer_name,
 
+    buyer_email,
+
     tracking_number,
 
     carrier,
@@ -149,6 +157,8 @@ export default async function StatusPage({ params, searchParams }: StatusPagePro
     override_locked,
 
     override_status,
+
+    refund_status,
 
     item_value_cents,
 
@@ -174,6 +184,16 @@ export default async function StatusPage({ params, searchParams }: StatusPagePro
 
     override_status === "none";
 
+  const canRequestRefund =
+
+    override_status === "completed" &&
+
+    override_locked === true &&
+
+    carrier_status !== "Delivered" &&
+
+    refund_status === "none";
+
 
 
   return (
@@ -183,37 +203,39 @@ export default async function StatusPage({ params, searchParams }: StatusPagePro
       <div className="w-full max-w-xl bg-white shadow-sm rounded-xl border border-slate-200 p-6 space-y-6">
 
         {isSuccess && (
-
-          <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3">
-
-            <div className="flex items-start gap-3">
-
-              <div className="flex-shrink-0">
-
-                <svg className="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-
-                </svg>
-
+          <>
+            <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-green-900">Payment Successful!</h3>
+                  <p className="mt-1 text-sm text-green-800">
+                    Your signature release authorization has been processed. You&apos;ll receive a confirmation email shortly, and the carrier will be notified to leave your package without requiring a signature.
+                  </p>
+                </div>
               </div>
-
-              <div className="flex-1">
-
-                <h3 className="text-sm font-semibold text-green-900">Payment Successful!</h3>
-
-                <p className="mt-1 text-sm text-green-800">
-
-                  Your signature release authorization has been processed. You&apos;ll receive a confirmation email shortly, and the carrier will be notified to leave your package without requiring a signature.
-
-                </p>
-
-              </div>
-
             </div>
-
-          </div>
-
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-amber-900">Delivery Guarantee</h3>
+                  <p className="mt-1 text-sm text-amber-800">
+                    If your package still cannot be delivered, you may be eligible for a refund under PreSign&apos;s Delivery Guarantee. If the carrier still requires a physical signature, take a photo of the official delivery attempt slip and email it to{" "}
+                    <a href="mailto:refunds@presign.app" className="underline font-medium">refunds@presign.app</a>.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </>
         )}
 
 
@@ -438,6 +460,53 @@ export default async function StatusPage({ params, searchParams }: StatusPagePro
 
           </section>
 
+        )}
+
+        {/* Refund Request Section */}
+        {canRequestRefund && (
+          <section className="space-y-3 border-t border-slate-200 pt-6">
+            <h2 className="text-sm font-medium text-slate-700">
+              Delivery Guarantee Refund Request
+            </h2>
+            <p className="text-sm text-slate-600">
+              If your package still cannot be delivered despite your authorization, you may be eligible for a refund under PreSign&apos;s Delivery Guarantee.
+            </p>
+            <RefundRequestForm
+              trackingNumber={tracking_number}
+              buyerEmail={buyer_email}
+            />
+          </section>
+        )}
+
+        {/* Refund Status Display */}
+        {refund_status && refund_status !== "none" && (
+          <section className="space-y-2 border-t border-slate-200 pt-6">
+            <h2 className="text-sm font-medium text-slate-700">
+              Refund Request Status
+            </h2>
+            <div className={`rounded-lg border px-4 py-3 text-sm ${
+              refund_status === "approved"
+                ? "border-green-200 bg-green-50 text-green-800"
+                : refund_status === "denied"
+                ? "border-red-200 bg-red-50 text-red-800"
+                : "border-amber-200 bg-amber-50 text-amber-800"
+            }`}>
+              <p className="font-semibold mb-1">
+                {refund_status === "approved"
+                  ? "✓ Refund Approved"
+                  : refund_status === "denied"
+                  ? "✗ Refund Denied"
+                  : "⏳ Refund Request Pending"}
+              </p>
+              <p>
+                {refund_status === "approved"
+                  ? "Your refund has been processed. You will receive $2.99 back to your original payment method within 5-10 business days."
+                  : refund_status === "denied"
+                  ? "Your refund request has been denied. Please contact support@presign.app if you have questions."
+                  : "Your refund request is being reviewed. You will receive an email notification once a decision has been made."}
+              </p>
+            </div>
+          </section>
         )}
 
       </div>

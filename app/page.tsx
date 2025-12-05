@@ -75,8 +75,11 @@ export default async function Page({
               <br />
               <span className="text-accent">Signature-Required Packages</span>
             </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground mb-4 max-w-2xl mx-auto">
               Give customers a simple, secure way to authorize delivery—before the carrier arrives.
+            </p>
+            <p className="text-sm text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Every remote authorization includes our Delivery Guarantee. If the carrier still requires a physical signature, you may request a refund with proof of the missed-delivery slip.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" variant="accent" className="text-base px-8 py-6">
@@ -139,6 +142,11 @@ export default async function Page({
                   Merchant receives documentation + updates delivery instructions
                 </p>
               </div>
+            </div>
+            <div className="mt-12 p-6 rounded-xl border border-border bg-card max-w-2xl mx-auto">
+              <p className="text-sm text-muted-foreground text-center">
+                <strong className="text-foreground">PreSign Delivery Guarantee</strong> — If the carrier does not honor the authorized release and leaves an official missed-delivery slip, customers can request a refund by sending us a photo of the slip.
+              </p>
             </div>
           </div>
         </div>
@@ -576,6 +584,7 @@ export default async function Page({
           </div>
           <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
             <p>&copy; {new Date().getFullYear()} PreSign. All rights reserved.</p>
+            <p className="mt-2 text-xs">Guarantee applies only when an official UPS or FedEx delivery attempt slip is provided.</p>
           </div>
         </div>
       </footer>

@@ -95,6 +95,10 @@ export type Database = {
           merchant_earnings_cents: number | null
           authorization_pdf_url: string | null
           override_locked: boolean
+          refund_status: 'none' | 'requested' | 'approved' | 'denied'
+          refund_reason: string | null
+          refund_requested_at: string | null
+          refund_updated_at: string | null
           created_at: string
           updated_at: string
         }
@@ -117,6 +121,10 @@ export type Database = {
           merchant_earnings_cents?: number | null
           authorization_pdf_url?: string | null
           override_locked?: boolean
+          refund_status?: 'none' | 'requested' | 'approved' | 'denied'
+          refund_reason?: string | null
+          refund_requested_at?: string | null
+          refund_updated_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -139,6 +147,10 @@ export type Database = {
           merchant_earnings_cents?: number | null
           authorization_pdf_url?: string | null
           override_locked?: boolean
+          refund_status?: 'none' | 'requested' | 'approved' | 'denied'
+          refund_reason?: string | null
+          refund_requested_at?: string | null
+          refund_updated_at?: string | null
           created_at?: string
           updated_at?: string
         }

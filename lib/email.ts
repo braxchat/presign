@@ -3,7 +3,8 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const APP_NAME = 'PreSign';
-const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@presign.app';
+const BUYER_FROM_EMAIL = 'no-reply@presign.app';
+const MERCHANT_FROM_EMAIL = 'support@presign.app';
 
 /**
  * Generate the buyer status page URL
@@ -123,7 +124,7 @@ export async function sendShipmentNotificationEmail({
 }: ShipmentNotificationParams) {
   const statusUrl = getStatusUrl(buyerToken);
   
-  const subject = `Your ${merchantName} order has shipped!`;
+  const subject = `Your package requires a Direct Signature — authorize delivery`;
   
   const content = `
     <!-- Header -->
@@ -219,7 +220,7 @@ export async function sendShipmentNotificationEmail({
         
         <!-- Footer -->
         <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center;">
-          This email was sent by <strong style="color: #6b7280;">${APP_NAME}</strong> on behalf of ${merchantName}.
+          Sent automatically by <strong style="color: #6b7280;">${APP_NAME}</strong>
         </p>
       </td>
     </tr>
@@ -247,12 +248,12 @@ Track your package: ${statusUrl}
 If you have any questions about your order, please contact ${merchantName} directly.
 
 ---
-This email was sent by ${APP_NAME} on behalf of ${merchantName}.
+Sent automatically by ${APP_NAME}
   `.trim();
 
   try {
     const { data, error } = await resend.emails.send({
-      from: `${APP_NAME} <${FROM_EMAIL}>`,
+      from: `${APP_NAME} <${BUYER_FROM_EMAIL}>`,
       to: buyerEmail,
       subject,
       html,
@@ -372,6 +373,20 @@ export async function sendOverrideConfirmationEmail({
           </tr>
         </table>
         
+        <!-- Delivery Guarantee Box -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 6px;">
+          <tr>
+            <td style="padding: 16px 20px;">
+              <p style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #92400e;">
+                PreSign Delivery Guarantee
+              </p>
+              <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #78350f;">
+                If your carrier still requires a physical signature even after authorizing release, PreSign provides a Delivery Guarantee. If this occurs, take a photo of the official ${carrier} delivery attempt slip and email it to <a href="mailto:refunds@presign.app" style="color: #92400e; text-decoration: underline;">refunds@presign.app</a>.
+              </p>
+            </td>
+          </tr>
+        </table>
+        
         <!-- CTA Button -->
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0;">
           <tr>
@@ -392,7 +407,7 @@ export async function sendOverrideConfirmationEmail({
         
         <!-- Footer -->
         <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center;">
-          This email was sent by <strong style="color: #6b7280;">${APP_NAME}</strong> on behalf of ${merchantName}.
+          Sent automatically by <strong style="color: #6b7280;">${APP_NAME}</strong>
         </p>
       </td>
     </tr>
@@ -414,15 +429,18 @@ Authorized by: ${typedName}
 WHAT HAPPENS NEXT?
 The carrier will leave your package at your delivery address without requiring a signature. Please ensure a safe delivery location is available.
 
+PRESIGN DELIVERY GUARANTEE
+If your carrier still requires a physical signature even after authorizing release, PreSign provides a Delivery Guarantee. If this occurs, take a photo of the official ${carrier} delivery attempt slip and email it to refunds@presign.app.
+
 View shipment status: ${statusUrl}
 
 ---
-This email was sent by ${APP_NAME} on behalf of ${merchantName}.
+Sent automatically by ${APP_NAME}
   `.trim();
 
   try {
     const { data, error } = await resend.emails.send({
-      from: `${APP_NAME} <${FROM_EMAIL}>`,
+      from: `${APP_NAME} <${BUYER_FROM_EMAIL}>`,
       to: buyerEmail,
       subject,
       html,
@@ -464,7 +482,7 @@ export async function sendCutoffLockedEmail({
 }: CutoffLockedParams) {
   const statusUrl = getStatusUrl(buyerToken);
   
-  const subject = `Your ${merchantName} package is out for delivery`;
+  const subject = `Delivery in Progress — Signature Cannot Be Removed`;
   
   const content = `
     <!-- Header -->
@@ -558,7 +576,7 @@ export async function sendCutoffLockedEmail({
         
         <!-- Footer -->
         <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center;">
-          This email was sent by <strong style="color: #6b7280;">${APP_NAME}</strong> on behalf of ${merchantName}.
+          Sent automatically by <strong style="color: #6b7280;">${APP_NAME}</strong>
         </p>
       </td>
     </tr>
@@ -584,12 +602,12 @@ If you miss the delivery, the carrier will leave a notice with instructions for 
 Track your package: ${statusUrl}
 
 ---
-This email was sent by ${APP_NAME} on behalf of ${merchantName}.
+Sent automatically by ${APP_NAME}
   `.trim();
 
   try {
     const { data, error } = await resend.emails.send({
-      from: `${APP_NAME} <${FROM_EMAIL}>`,
+      from: `${APP_NAME} <${BUYER_FROM_EMAIL}>`,
       to: buyerEmail,
       subject,
       html,
@@ -644,7 +662,7 @@ export async function sendAuthorizationPdfToMerchant({
   const safeTracking = trackingNumber || 'N/A';
   const safeOrderId = orderId || 'N/A';
 
-  const subject = `Buyer Delivery Authorization for Order #${safeOrderId}`;
+  const subject = `Buyer Authorized Remote Delivery — Action Required`;
 
   const content = `
     <!-- Header -->
@@ -689,9 +707,19 @@ export async function sendAuthorizationPdfToMerchant({
           </tr>
         </table>
         
-        <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
-          Use this document if you need to update delivery instructions with UPS or FedEx.
-        </p>
+        <!-- Action Required Alert -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px;">
+          <tr>
+            <td style="padding: 16px 20px;">
+              <p style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #92400e;">
+                ⚠️ Action Required
+              </p>
+              <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #78350f;">
+                You must manually update UPS/FedEx delivery instructions before the next delivery attempt. This PDF authorization confirms the buyer's consent but does not automatically modify carrier systems.
+              </p>
+            </td>
+          </tr>
+        </table>
         
         <!-- Divider -->
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0;">
@@ -743,7 +771,7 @@ Carrier: ${safeCarrier}
 
 Download the signed authorization PDF: ${pdfUrl}
 
-Use this document if you need to update delivery instructions with UPS or FedEx.
+⚠️ ACTION REQUIRED: You must manually update UPS/FedEx delivery instructions before the next delivery attempt. This PDF authorization confirms the buyer's consent but does not automatically modify carrier systems.
 
 Manage this shipment and all overrides in your dashboard: ${dashboardUrl}
 
@@ -753,7 +781,7 @@ including loss, theft, or damage. You may still need to update delivery options 
 
   try {
     const { data, error } = await resend.emails.send({
-      from: `${APP_NAME} <${FROM_EMAIL}>`,
+      from: `PreSign Support <${MERCHANT_FROM_EMAIL}>`,
       to: merchantEmail,
       subject,
       html,
@@ -769,6 +797,462 @@ including loss, theft, or damage. You may still need to update delivery options 
     return data;
   } catch (error) {
     console.error('Error sending merchant authorization email:', error);
+    throw error;
+  }
+}
+
+interface RefundApprovedParams {
+  buyerEmail: string;
+  buyerName: string;
+  trackingNumber: string;
+  carrier: string;
+  merchantName: string;
+  refundId: string | null;
+}
+
+/**
+ * Send refund approval confirmation email to buyer
+ */
+export async function sendRefundApprovedEmail({
+  buyerEmail,
+  buyerName,
+  trackingNumber,
+  carrier,
+  merchantName,
+  refundId,
+}: RefundApprovedParams) {
+  const subject = `Refund Approved – Tracking #${trackingNumber}`;
+
+  const content = `
+    <!-- Header -->
+    <tr>
+      <td style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px 30px; text-align: center;">
+        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">${APP_NAME}</h1>
+      </td>
+    </tr>
+    
+    <!-- Success Badge -->
+    <tr>
+      <td style="padding: 30px 30px 0 30px; text-align: center;">
+        <span style="display: inline-block; background-color: #d1fae5; color: #065f46; padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 14px;">
+          ✓ Refund Approved
+        </span>
+      </td>
+    </tr>
+    
+    <!-- Main Content -->
+    <tr>
+      <td style="padding: 40px 30px;">
+        <p style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.6; color: #1f2937; font-weight: 500;">Hi ${buyerName},</p>
+        
+        <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+          Your refund request has been approved. We have processed a full refund of $2.99 to your original payment method.
+        </p>
+        
+        <!-- Refund Info Card -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+          <tr>
+            <td style="padding: 20px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="padding: 0 0 12px 0;">
+                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Tracking Number</p>
+                    <p style="margin: 8px 0 0 0; font-size: 18px; font-family: 'Courier New', monospace; font-weight: 600; color: #1f2937; word-break: break-all;">${trackingNumber}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0 0 0; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Refund Amount</p>
+                    <p style="margin: 8px 0 0 0; font-size: 18px; font-weight: 600; color: #1f2937;">$2.99</p>
+                  </td>
+                </tr>
+                ${refundId ? `
+                <tr>
+                  <td style="padding: 12px 0 0 0; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Refund ID</p>
+                    <p style="margin: 8px 0 0 0; font-size: 14px; font-family: 'Courier New', monospace; font-weight: 500; color: #1f2937;">${refundId}</p>
+                  </td>
+                </tr>
+                ` : ''}
+              </table>
+            </td>
+          </tr>
+        </table>
+        
+        <!-- Info Alert -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #e0f2fe; border-left: 4px solid #3b82f6; border-radius: 6px;">
+          <tr>
+            <td style="padding: 16px 20px;">
+              <p style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #1e40af;">
+                What happens next?
+              </p>
+              <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #1c3c8c;">
+                The refund will appear in your account within 5-10 business days, depending on your bank or card issuer.
+              </p>
+            </td>
+          </tr>
+        </table>
+        
+        <p style="margin: 0 0 0 0; font-size: 14px; line-height: 1.5; color: #6b7280;">
+          If you have any questions, please contact us at <a href="mailto:support@presign.app" style="color: #4f46e5; text-decoration: underline;">support@presign.app</a>.
+        </p>
+      </td>
+    </tr>
+  `;
+
+  const html = getEmailTemplate(content);
+
+  const text = `
+Hi ${buyerName},
+
+REFUND APPROVED ✓
+
+Your refund request has been approved. We have processed a full refund of $2.99 to your original payment method.
+
+Tracking Number: ${trackingNumber}
+Refund Amount: $2.99
+${refundId ? `Refund ID: ${refundId}` : ''}
+
+WHAT HAPPENS NEXT?
+The refund will appear in your account within 5-10 business days, depending on your bank or card issuer.
+
+If you have any questions, please contact us at support@presign.app.
+  `.trim();
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: `${APP_NAME} <${BUYER_FROM_EMAIL}>`,
+      to: buyerEmail,
+      subject,
+      html,
+      text,
+    });
+
+    if (error) {
+      console.error('Failed to send refund approval email:', error);
+      throw error;
+    }
+
+    console.log('Refund approval email sent:', data?.id);
+    return data;
+  } catch (error) {
+    console.error('Error sending refund approval email:', error);
+    throw error;
+  }
+}
+
+interface RefundDeniedParams {
+  buyerEmail: string;
+  buyerName: string;
+  trackingNumber: string;
+  carrier: string;
+  merchantName: string;
+  reason: string;
+}
+
+/**
+ * Send refund denial email to buyer
+ */
+export async function sendRefundDeniedEmail({
+  buyerEmail,
+  buyerName,
+  trackingNumber,
+  carrier,
+  merchantName,
+  reason,
+}: RefundDeniedParams) {
+  const subject = `Refund Request Denied – Tracking #${trackingNumber}`;
+
+  const content = `
+    <!-- Header -->
+    <tr>
+      <td style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px 30px; text-align: center;">
+        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">${APP_NAME}</h1>
+      </td>
+    </tr>
+    
+    <!-- Alert Badge -->
+    <tr>
+      <td style="padding: 30px 30px 0 30px; text-align: center;">
+        <span style="display: inline-block; background-color: #fee2e2; color: #991b1b; padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 14px;">
+          Refund Request Denied
+        </span>
+      </td>
+    </tr>
+    
+    <!-- Main Content -->
+    <tr>
+      <td style="padding: 40px 30px;">
+        <p style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.6; color: #1f2937; font-weight: 500;">Hi ${buyerName},</p>
+        
+        <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+          We have reviewed your refund request and unfortunately, we are unable to approve it at this time.
+        </p>
+        
+        <!-- Refund Info Card -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+          <tr>
+            <td style="padding: 20px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="padding: 0 0 12px 0;">
+                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Tracking Number</p>
+                    <p style="margin: 8px 0 0 0; font-size: 18px; font-family: 'Courier New', monospace; font-weight: 600; color: #1f2937; word-break: break-all;">${trackingNumber}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0 0 0; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Carrier</p>
+                    <p style="margin: 8px 0 0 0; font-size: 16px; font-weight: 500; color: #1f2937;">${carrier}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        
+        <!-- Denial Reason -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px;">
+          <tr>
+            <td style="padding: 16px 20px;">
+              <p style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #92400e;">
+                Reason for Denial
+              </p>
+              <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #78350f; white-space: pre-wrap;">${reason}</p>
+            </td>
+          </tr>
+        </table>
+        
+        <p style="margin: 0 0 0 0; font-size: 14px; line-height: 1.5; color: #6b7280;">
+          If you have any questions or would like to appeal this decision, please contact us at <a href="mailto:support@presign.app" style="color: #4f46e5; text-decoration: underline;">support@presign.app</a>.
+        </p>
+      </td>
+    </tr>
+  `;
+
+  const html = getEmailTemplate(content);
+
+  const text = `
+Hi ${buyerName},
+
+REFUND REQUEST DENIED
+
+We have reviewed your refund request and unfortunately, we are unable to approve it at this time.
+
+Tracking Number: ${trackingNumber}
+Carrier: ${carrier}
+
+REASON FOR DENIAL:
+${reason}
+
+If you have any questions or would like to appeal this decision, please contact us at support@presign.app.
+  `.trim();
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: `${APP_NAME} <${BUYER_FROM_EMAIL}>`,
+      to: buyerEmail,
+      subject,
+      html,
+      text,
+    });
+
+    if (error) {
+      console.error('Failed to send refund denial email:', error);
+      throw error;
+    }
+
+    console.log('Refund denial email sent:', data?.id);
+    return data;
+  } catch (error) {
+    console.error('Error sending refund denial email:', error);
+    throw error;
+  }
+}
+
+interface RefundRequestReceivedParams {
+  adminEmail: string;
+  trackingNumber: string;
+  buyerEmail: string;
+  buyerName: string;
+  merchantName: string | null;
+  merchantShopDomain: string | null;
+  carrier: string;
+  orderId: string | null;
+  shipmentId: string;
+}
+
+/**
+ * Send refund request notification to admin
+ * Notifies admin when a buyer submits a delivery attempt slip for refund review
+ */
+export async function sendRefundRequestReceivedEmail({
+  adminEmail,
+  trackingNumber,
+  buyerEmail,
+  buyerName,
+  merchantName,
+  merchantShopDomain,
+  carrier,
+  orderId,
+  shipmentId,
+}: RefundRequestReceivedParams) {
+  if (!adminEmail) {
+    console.warn('No admin email provided, skipping email');
+    return;
+  }
+
+  const safeMerchantName = merchantName || merchantShopDomain || 'Unknown Merchant';
+  const safeOrderId = orderId || 'N/A';
+  const safeCarrier = carrier || 'Carrier';
+
+  const subject = `Refund Request Submitted – Tracking #${trackingNumber}`;
+
+  const content = `
+    <!-- Header -->
+    <tr>
+      <td style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px 30px; text-align: center;">
+        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">${APP_NAME}</h1>
+      </td>
+    </tr>
+    
+    <!-- Alert Badge -->
+    <tr>
+      <td style="padding: 30px 30px 0 30px; text-align: center;">
+        <span style="display: inline-block; background-color: #fef3c7; color: #92400e; padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 14px;">
+          ⚠️ Refund Request Submitted
+        </span>
+      </td>
+    </tr>
+    
+    <!-- Main Content -->
+    <tr>
+      <td style="padding: 40px 30px;">
+        <p style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.6; color: #1f2937; font-weight: 500;">Hello Admin,</p>
+        
+        <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+          A buyer has submitted a delivery attempt slip for refund review under PreSign's Delivery Guarantee.
+        </p>
+        
+        <!-- Shipment Info Card -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+          <tr>
+            <td style="padding: 20px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="padding: 0 0 12px 0;">
+                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Tracking Number</p>
+                    <p style="margin: 8px 0 0 0; font-size: 18px; font-family: 'Courier New', monospace; font-weight: 600; color: #1f2937; word-break: break-all;">${trackingNumber}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0 0 0; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Carrier</p>
+                    <p style="margin: 8px 0 0 0; font-size: 16px; font-weight: 500; color: #1f2937;">${safeCarrier}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0 0 0; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Order ID</p>
+                    <p style="margin: 8px 0 0 0; font-size: 16px; font-weight: 500; color: #1f2937;">${safeOrderId}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0 0 0; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Buyer</p>
+                    <p style="margin: 8px 0 0 0; font-size: 16px; font-weight: 500; color: #1f2937;">${buyerName} (${buyerEmail})</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0 0 0; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Merchant</p>
+                    <p style="margin: 8px 0 0 0; font-size: 16px; font-weight: 500; color: #1f2937;">${safeMerchantName}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0 0 0; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Shipment ID</p>
+                    <p style="margin: 8px 0 0 0; font-size: 14px; font-family: 'Courier New', monospace; font-weight: 500; color: #1f2937;">${shipmentId}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        
+        <!-- Action Required Alert -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px;">
+          <tr>
+            <td style="padding: 16px 20px;">
+              <p style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #92400e;">
+                Action Required
+              </p>
+              <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #78350f;">
+                Please review this refund request in the PreSign Admin dashboard. Verify the delivery attempt slip and process the refund according to PreSign's Delivery Guarantee policy.
+              </p>
+            </td>
+          </tr>
+        </table>
+        
+        <!-- CTA Button -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0;">
+          <tr>
+            <td align="center" style="padding: 0;">
+              <a href="${process.env.APP_BASE_URL || process.env.SHOPIFY_APP_URL || ''}/admin/refunds/${shipmentId}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);">
+                Review in Admin Dashboard
+              </a>
+            </td>
+          </tr>
+        </table>
+        
+        <p style="margin: 0 0 0 0; font-size: 14px; line-height: 1.5; color: #6b7280;">
+          This refund request was submitted by the buyer via email to refunds@presign.app.
+        </p>
+      </td>
+    </tr>
+  `;
+
+  const html = getEmailTemplate(content);
+
+  const text = `
+Hello Admin,
+
+A buyer has submitted a delivery attempt slip for refund review under PreSign's Delivery Guarantee.
+
+SHIPMENT DETAILS:
+Tracking Number: ${trackingNumber}
+Carrier: ${safeCarrier}
+Order ID: ${safeOrderId}
+Buyer: ${buyerName} (${buyerEmail})
+Merchant: ${safeMerchantName}
+Shipment ID: ${shipmentId}
+
+ACTION REQUIRED:
+Please review this refund request in the PreSign Admin dashboard. Verify the delivery attempt slip and process the refund according to PreSign's Delivery Guarantee policy.
+
+Review in Admin Dashboard: ${process.env.APP_BASE_URL || process.env.SHOPIFY_APP_URL || ''}/admin/refunds/${shipmentId}
+
+This refund request was submitted by the buyer via email to refunds@presign.app.
+  `.trim();
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: `PreSign Support <${MERCHANT_FROM_EMAIL}>`,
+      to: adminEmail,
+      subject,
+      html,
+      text,
+    });
+
+    if (error) {
+      console.error('Failed to send refund request received email:', error);
+      throw error;
+    }
+
+    console.log('Refund request received email sent:', data?.id);
+    return data;
+  } catch (error) {
+    console.error('Error sending refund request received email:', error);
     throw error;
   }
 }
