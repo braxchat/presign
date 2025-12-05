@@ -1,3 +1,7 @@
+// Force this route to run dynamically in Node.js
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 import { NextRequest, NextResponse } from 'next/server';
 import { shopify } from '@/lib/shopify';
 
@@ -46,21 +50,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Convert NextRequest to format expected by Shopify Node adapter
-    const url = new URL(request.url);
-    const rawRequest = {
-      url: request.url,
-      method: request.method,
-      headers: Object.fromEntries(request.headers.entries()),
-      query: Object.fromEntries(url.searchParams.entries()),
-    };
-
     // Begin OAuth flow
     const authUrl = await shopify.auth.begin({
       shop,
       callbackPath: '/api/shopify/auth/callback',
       isOnline: false,
-      rawRequest: rawRequest as any,
+      rawRequest: request,
     });
 
     // Redirect to Shopify permission screen

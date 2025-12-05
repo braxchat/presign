@@ -44,4 +44,14 @@ export const supabase = typeof window !== 'undefined' && supabaseUrl && supabase
   ? supabaseCreateClient<Database>(supabaseUrl, supabaseAnonKey)
   : null;
 
-export const supabaseService = createServiceClient();
+// Lazy-initialized service client to avoid build-time errors when env vars are missing
+let _supabaseService: ReturnType<typeof createServiceClient> | null = null;
+
+export const supabaseService = new Proxy({} as ReturnType<typeof createServiceClient>, {
+  get(_, prop) {
+    if (!_supabaseService) {
+      _supabaseService = createServiceClient();
+    }
+    return _supabaseService[prop as keyof ReturnType<typeof createServiceClient>];
+  },
+});

@@ -120,7 +120,7 @@ export default function CarrierSettingsPage() {
 
           {saved && (
 
-            <Banner status="success" title="Settings saved">
+            <Banner tone="success" title="Settings saved">
 
               <p>Your carrier API settings have been updated.</p>
 
@@ -138,11 +138,15 @@ export default function CarrierSettingsPage() {
 
         <Layout.Section>
 
-          <Card title="UPS" sectioned>
+          <Card>
 
-            <Form onSubmit={handleSubmit}>
+            <div style={{ padding: '16px' }}>
 
-              <FormLayout>
+              <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>UPS</h2>
+
+              <Form onSubmit={handleSubmit}>
+
+                <FormLayout>
 
                 <TextField
 
@@ -198,17 +202,23 @@ export default function CarrierSettingsPage() {
 
             </Form>
 
+            </div>
+
           </Card>
 
         </Layout.Section>
 
         <Layout.Section>
 
-          <Card title="FedEx" sectioned>
+          <Card>
 
-            <Form onSubmit={handleSubmit}>
+            <div style={{ padding: '16px' }}>
 
-              <FormLayout>
+              <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>FedEx</h2>
+
+              <Form onSubmit={handleSubmit}>
+
+                <FormLayout>
 
                 <TextField
 
@@ -260,7 +270,7 @@ export default function CarrierSettingsPage() {
 
                 />
 
-                <Button primary onClick={handleSubmit} loading={saving}>
+                <Button variant="primary" onClick={handleSubmit} loading={saving}>
 
                   Save Settings
 
@@ -269,6 +279,8 @@ export default function CarrierSettingsPage() {
               </FormLayout>
 
             </Form>
+
+            </div>
 
           </Card>
 

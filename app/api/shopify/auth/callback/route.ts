@@ -1,5 +1,8 @@
+// Force this route to run dynamically in Node.js
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { shopify } from '@/lib/shopify';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 
@@ -52,18 +55,10 @@ export async function GET(request: NextRequest) {
     console.log('CALLBACK ROUTE CALLED', process.env.SHOPIFY_APP_URL);
     console.log('APP_BASE_URL:', process.env.APP_BASE_URL);
 
-    // Convert NextRequest to format expected by Shopify Node adapter
-    const url = new URL(request.url);
-    const rawRequest = {
-      url: request.url,
-      method: request.method,
-      headers: Object.fromEntries(request.headers.entries()),
-      query: Object.fromEntries(url.searchParams.entries()),
-    };
-
     // Complete the OAuth flow
     const callbackResponse = await shopify.auth.callback({
-      rawRequest: rawRequest as any,
+      rawRequest: request,
+      rawResponse: NextResponse.next(),
     });
 
     const { session } = callbackResponse;
