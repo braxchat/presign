@@ -157,7 +157,7 @@ export default function DashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {isLoading ? (
+        {loading ? (
           <>
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="bg-card rounded-xl border border-border shadow-md p-6 animate-pulse">
@@ -246,7 +246,7 @@ export default function DashboardPage() {
           </div>
         </div>
         <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-          {isLoading ? (
+          {loading ? (
             <div className="p-8 text-center">
               <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground mb-2" />
               <p className="text-sm text-muted-foreground">Loading shipments...</p>
