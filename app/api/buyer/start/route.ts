@@ -3,8 +3,9 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { findShipmentByToken } from '@/lib/db';
-import { stripe } from '@/lib/stripe';
+import { findShipmentByToken, createSignatureAuthorization } from '@/lib/db';
+import { createAuthorizationPdf } from '@/lib/pdf';
+import { sendAuthorizationPdfToMerchant, sendOverrideConfirmationEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,23 +47,23 @@ export async function POST(request: NextRequest) {
     // Check if already locked (OutForDelivery or Delivered)
     if (shipment.carrier_status === 'OutForDelivery' || shipment.carrier_status === 'Delivered') {
       return NextResponse.json(
-        { error: 'Shipment is out for delivery or already delivered. Override is no longer available.' },
+        { error: 'Shipment is out for delivery or already delivered. Authorization is no longer available.' },
         { status: 400 }
       );
     }
 
-    // Check if override already requested or completed
+    // Check if authorization already requested or completed
     if (shipment.override_status !== 'none') {
       return NextResponse.json(
-        { error: 'Override already processed' },
+        { error: 'Authorization already processed' },
         { status: 400 }
       );
     }
 
-    // Get merchant info for Stripe account
+    // Get merchant info
     const { data: merchant, error: merchantError } = await supabaseAdmin
       .from('merchants')
-      .select('stripe_account_id')
+      .select('id, business_name, email')
       .eq('id', shipment.merchant_id)
       .single();
 
@@ -74,71 +75,100 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create Stripe Checkout Session
-    const baseUrl = process.env.APP_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || '';
-    const successUrl = `${baseUrl}/status/${token}?success=true`;
-    const cancelUrl = `${baseUrl}/status/${token}?canceled=true`;
-
-    const sessionParams: Stripe.Checkout.SessionCreateParams = {
-      mode: 'payment',
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: 'Signature Release Authorization',
-              description: `Authorize ${shipment.carrier} to release package ${shipment.tracking_number} without signature`,
-            },
-            unit_amount: 299, // $2.99
-          },
-          quantity: 1,
-        },
-      ],
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      metadata: {
-        shipment_id: shipment.id,
-        override_token: token,
-        tracking_number: shipment.tracking_number,
-        auth_name: typedName.trim(),
-        auth_ip: ipAddress,
-        auth_timestamp: authTimestamp,
-        user_agent: userAgent || '',
-      },
-      customer_email: shipment.buyer_email,
-    };
-
-    // If merchant has Stripe Connect account, use it
-    if (merchant.stripe_account_id) {
-      sessionParams.payment_intent_data = {
-        application_fee_amount: 50, // $0.50 fee to platform
-      };
-      sessionParams.payment_method_types = ['card'];
+    // Create signature authorization record
+    try {
+      await createSignatureAuthorization({
+        shipmentId: shipment.id,
+        typedName: typedName.trim(),
+        ipAddress,
+        userAgent: userAgent || undefined,
+      });
+    } catch (authError: any) {
+      console.error('Error creating signature authorization:', authError);
+      return NextResponse.json(
+        { error: 'Failed to create authorization' },
+        { status: 500 }
+      );
     }
 
-    const session = await stripe.checkout.sessions.create(sessionParams);
+    // Generate authorization PDF
+    let pdfUrl: string | null = null;
+    try {
+      pdfUrl = await createAuthorizationPdf({
+        shipmentId: shipment.id,
+        buyerName: shipment.buyer_name,
+        buyerEmail: shipment.buyer_email,
+        merchantName: merchant.business_name || null,
+        trackingNumber: shipment.tracking_number,
+        carrier: shipment.carrier,
+        orderId: shipment.order_number,
+        authTimestamp,
+        buyerIp: ipAddress,
+      });
+    } catch (pdfError) {
+      console.error('Error generating authorization PDF:', pdfError);
+      // Continue even if PDF generation fails
+    }
 
-    // Update shipment with checkout session ID and mark as requested
-    await supabaseAdmin
+    // Update shipment: mark as requested and store PDF URL
+    const { error: updateError } = await supabaseAdmin
       .from('shipments')
       .update({
         override_status: 'requested',
-        stripe_checkout_session_id: session.id,
+        authorization_pdf_url: pdfUrl,
         updated_at: new Date().toISOString(),
       })
       .eq('id', shipment.id);
 
-    return NextResponse.json({
-      checkoutUrl: session.url,
-      sessionId: session.id,
-    });
+    if (updateError) {
+      console.error('Failed to update shipment:', updateError);
+      return NextResponse.json(
+        { error: 'Failed to update shipment' },
+        { status: 500 }
+      );
+    }
+
+    // Send confirmation email to buyer
+    try {
+      await sendOverrideConfirmationEmail({
+        buyerEmail: shipment.buyer_email,
+        buyerName: shipment.buyer_name,
+        trackingNumber: shipment.tracking_number,
+        carrier: shipment.carrier,
+        merchantName: merchant.business_name || 'Merchant',
+        buyerToken: shipment.buyer_status_token || shipment.override_token || token,
+        typedName: typedName.trim(),
+      });
+    } catch (emailError) {
+      console.error('Failed to send buyer confirmation email:', emailError);
+      // Don't fail the request if email fails
+    }
+
+    // Send authorization PDF email to merchant
+    if (pdfUrl && merchant.email) {
+      try {
+        await sendAuthorizationPdfToMerchant({
+          merchantEmail: merchant.email,
+          merchantName: merchant.business_name,
+          buyerName: shipment.buyer_name,
+          trackingNumber: shipment.tracking_number,
+          carrier: shipment.carrier,
+          orderId: shipment.order_number,
+          pdfUrl,
+          dashboardUrl: `${process.env.APP_BASE_URL || process.env.SHOPIFY_APP_URL || ''}/merchant/dashboard`,
+        });
+      } catch (merchantEmailError) {
+        console.error('Failed to send merchant authorization email:', merchantEmailError);
+        // Don't fail the request if email fails
+      }
+    }
+
+    return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error('Error starting buyer checkout:', error);
+    console.error('Error starting buyer authorization:', error);
     return NextResponse.json(
-      { error: 'Failed to create checkout session' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
-
