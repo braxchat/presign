@@ -7,24 +7,14 @@ import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user || !user.email) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Get merchant by user email or shop cookie
+    // Get merchant by shop cookie (Shopify) or Supabase auth (Stripe)
     const cookieStore = await request.cookies;
     const shopDomain = cookieStore.get('shop')?.value;
 
     let merchant;
+
     if (shopDomain) {
+      // Shopify merchant - use shop cookie (no email/password required)
       const { data } = await supabaseAdmin
         .from('merchants')
         .select('*')
@@ -32,6 +22,17 @@ export async function POST(request: NextRequest) {
         .single();
       merchant = data;
     } else {
+      // Stripe merchant - use Supabase auth
+      const supabase = await createClient();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+      if (authError || !user || !user.email) {
+        return NextResponse.json(
+          { error: 'Unauthorized. Please sign in to complete onboarding.' },
+          { status: 401 }
+        );
+      }
+
       const { data } = await supabaseAdmin
         .from('merchants')
         .select('*')

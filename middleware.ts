@@ -1,7 +1,17 @@
 import { type NextRequest } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
+import { checkShopifyMerchantAccess } from '@/lib/authMiddleware';
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Check Shopify merchant access first
+  const shopifyRedirect = await checkShopifyMerchantAccess(request, pathname);
+  if (shopifyRedirect) {
+    return shopifyRedirect;
+  }
+
+  // Continue with Supabase session update
   return await updateSession(request);
 }
 

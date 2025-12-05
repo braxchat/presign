@@ -38,6 +38,9 @@ export type Database = {
           stripe_subscription_id: string | null
           shopify_session_id: string | null
           onboarding_completed: boolean
+          email_login: string | null
+          password_hash: string | null
+          has_password: boolean
           created_at: string
           updated_at: string
         }
@@ -69,6 +72,9 @@ export type Database = {
           stripe_subscription_id?: string | null
           shopify_session_id?: string | null
           onboarding_completed?: boolean
+          email_login?: string | null
+          password_hash?: string | null
+          has_password?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -100,6 +106,9 @@ export type Database = {
           stripe_subscription_id?: string | null
           shopify_session_id?: string | null
           onboarding_completed?: boolean
+          email_login?: string | null
+          password_hash?: string | null
+          has_password?: boolean
           created_at?: string
           updated_at?: string
         }

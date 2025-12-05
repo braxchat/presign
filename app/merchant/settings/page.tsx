@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,17 +11,36 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Save, Building2, Mail, Truck, Clock } from "lucide-react";
+import { Save, Building2, Mail, Truck, Clock, Lock, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+interface MerchantInfo {
+  id: string;
+  business_name: string;
+  contact_email: string;
+  email: string | null;
+  billing_provider: 'shopify' | 'stripe' | null;
+  shop_domain: string | null;
+  has_password: boolean;
+  email_login: string | null;
+}
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const [merchantInfo, setMerchantInfo] = useState<MerchantInfo | null>(null);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     businessName: "Acme Range",
     contactEmail: "merchant@acme.com",
     carrierPreference: "both",
     dailyUpdateTime: "8:00 AM",
   });
+  const [websiteCredentials, setWebsiteCredentials] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [savingCredentials, setSavingCredentials] = useState(false);
 
   const timeOptions = [
     "6:00 AM",
@@ -35,12 +54,125 @@ export default function SettingsPage() {
     "10:00 AM",
   ];
 
+  // Fetch merchant info on mount
+  useEffect(() => {
+    async function fetchMerchantInfo() {
+      try {
+        const response = await fetch('/api/merchant/info');
+        if (response.ok) {
+          const data = await response.json();
+          setMerchantInfo(data);
+          // Update form data with actual merchant data
+          setFormData({
+            businessName: data.business_name || "",
+            contactEmail: data.contact_email || "",
+            carrierPreference: "both",
+            dailyUpdateTime: "8:00 AM",
+          });
+          // Set email_login if it exists
+          if (data.email_login) {
+            setWebsiteCredentials(prev => ({ ...prev, email: data.email_login }));
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching merchant info:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchMerchantInfo();
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
       title: "Settings saved",
       description: "Your account settings have been updated.",
     });
+  };
+
+  const handleWebsiteCredentialsSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(websiteCredentials.email)) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate password length
+    if (websiteCredentials.password.length < 8) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 8 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate passwords match
+    if (websiteCredentials.password !== websiteCredentials.confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please make sure both password fields match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSavingCredentials(true);
+    try {
+      const response = await fetch('/api/merchant/credentials', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: websiteCredentials.email,
+          password: websiteCredentials.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to save credentials');
+      }
+
+      toast({
+        title: "Website login created",
+        description: "You can now access PreSign from presign.app using these credentials.",
+      });
+
+      // Update merchant info
+      if (merchantInfo) {
+        setMerchantInfo({
+          ...merchantInfo,
+          has_password: true,
+          email_login: websiteCredentials.email,
+        });
+      }
+
+      // Clear password fields
+      setWebsiteCredentials({
+        email: websiteCredentials.email,
+        password: "",
+        confirmPassword: "",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save credentials. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingCredentials(false);
+    }
   };
 
   return (
@@ -175,6 +307,96 @@ export default function SettingsPage() {
             </ul>
           </div>
         </div>
+
+        {/* Website Access Section - Only for Shopify merchants */}
+        {merchantInfo?.billing_provider === 'shopify' && (
+          <div className="bg-card rounded-xl border border-border shadow-sm p-6 space-y-6">
+            <div className="flex items-center gap-2">
+              <Lock className="h-5 w-5 text-accent" />
+              <h2 className="font-display text-lg font-semibold text-foreground">
+                Website Access (Optional)
+              </h2>
+            </div>
+
+            <p className="text-sm text-muted-foreground">
+              Create login credentials to access your PreSign dashboard directly from presign.app. This does not affect your Shopify login.
+            </p>
+
+            {merchantInfo.has_password ? (
+              <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span className="font-medium text-foreground">Website login is enabled</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Email: {merchantInfo.email_login}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  You can log in at presign.app/login using these credentials.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleWebsiteCredentialsSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="websiteEmail">Email</Label>
+                  <Input
+                    id="websiteEmail"
+                    type="email"
+                    value={websiteCredentials.email}
+                    onChange={(e) =>
+                      setWebsiteCredentials({ ...websiteCredentials, email: e.target.value })
+                    }
+                    className="h-11"
+                    placeholder="your@email.com"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="websitePassword">Password</Label>
+                  <Input
+                    id="websitePassword"
+                    type="password"
+                    value={websiteCredentials.password}
+                    onChange={(e) =>
+                      setWebsiteCredentials({ ...websiteCredentials, password: e.target.value })
+                    }
+                    className="h-11"
+                    placeholder="At least 8 characters"
+                    required
+                    minLength={8}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={websiteCredentials.confirmPassword}
+                    onChange={(e) =>
+                      setWebsiteCredentials({ ...websiteCredentials, confirmPassword: e.target.value })
+                    }
+                    className="h-11"
+                    placeholder="Re-enter password"
+                    required
+                    minLength={8}
+                  />
+                </div>
+
+                <Button 
+                  type="submit" 
+                  variant="accent" 
+                  className="w-full h-11 gap-2"
+                  disabled={savingCredentials}
+                >
+                  <Save className="h-4 w-4" />
+                  {savingCredentials ? "Saving..." : "Save Website Login"}
+                </Button>
+              </form>
+            )}
+          </div>
+        )}
 
         {/* Save Button */}
         <Button type="submit" variant="accent" className="w-full h-11 gap-2">
