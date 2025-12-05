@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Header } from "@/components/landing/Header";
 import { 
   Package, 
   Mail, 
@@ -13,26 +14,7 @@ export default function SupportPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-2">
-              <Package className="h-6 w-6 text-accent" />
-              <span className="font-display font-bold text-xl">PreSign</span>
-            </Link>
-            <div className="flex items-center gap-4">
-              <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground">
-                Sign In
-              </Link>
-              <Button asChild variant="accent">
-                <a href="https://apps.shopify.com/presign" target="_blank" rel="noopener noreferrer">
-                  Install on Shopify
-                </a>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Header />
 
       {/* Main Content */}
       <section className="py-20">
