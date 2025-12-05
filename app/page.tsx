@@ -80,7 +80,7 @@ export default async function Page({
               Give customers a simple, secure way to authorize delivery—before the carrier arrives.
             </p>
             <p className="text-sm text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Every remote authorization includes our Delivery Guarantee. If the carrier still requires a physical signature, you may request a refund with proof of the missed-delivery slip.
+            With every remote authorization, customers get our Delivery Guarantee—and merchants get to keep an extra $1.00. If the carrier still requires a physical signature, buyers may request a refund with proof of the missed-delivery slip.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" variant="accent" className="text-base px-8 py-6">
