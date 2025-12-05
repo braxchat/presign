@@ -175,7 +175,7 @@ export async function updateShopifySubscriptionStatus(
     }
 
     // Load the actual Shopify session from storage
-    const session = await shopify.sessionStorage.loadSession(merchant.shopify_session_id);
+    const session = await shopify.config.sessionStorage.loadSession(merchant.shopify_session_id);
 
     if (!session) {
       throw new Error('Failed to load Shopify session');

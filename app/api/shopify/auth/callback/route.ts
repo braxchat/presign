@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
 
     // Store the full Shopify session in session storage
     try {
-      await shopify.sessionStorage.storeSession(session);
+      await shopify.config.sessionStorage.storeSession(session);
       console.log('Shopify session stored:', session.id);
     } catch (storageError) {
       console.error('Error storing Shopify session:', storageError);

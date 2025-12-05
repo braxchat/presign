@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Load the actual Shopify session from storage
-    const session = await shopify.sessionStorage.loadSession(merchant.shopify_session_id);
+    const session = await shopify.config.sessionStorage.loadSession(merchant.shopify_session_id);
 
     if (!session) {
       console.error('Failed to load Shopify session:', merchant.shopify_session_id);
