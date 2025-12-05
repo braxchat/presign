@@ -1,9 +1,2 @@
-{
-  "crons": [
-    {
-      "path": "/api/cron/update-carrier-status",
-      "schedule": "0 0 * * *"
-    }
-  ]
-}
+{}
 

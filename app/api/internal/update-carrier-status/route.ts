@@ -1,13 +1,16 @@
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { getCarrierStatus } from '@/lib/carrier-tracking';
 import { sendCutoffLockedEmail } from '@/lib/email';
 
 /**
- * Cron endpoint to update carrier statuses
- * Should be called every 30 minutes via Vercel Cron or external scheduler
+ * Internal endpoint to update carrier statuses
+ * Should be called every 30 minutes via external scheduler or manual trigger
  * 
- * Route: /api/cron/update-carrier-status
+ * Route: /api/internal/update-carrier-status
  * Method: GET or POST
  * Auth: Should be protected with a secret token
  */
@@ -115,7 +118,7 @@ async function updateCarrierStatuses(request: NextRequest) {
               trackingNumber: shipment.tracking_number,
               carrier: shipment.carrier,
               merchantName: merchant?.business_name || 'Merchant',
-              buyerToken: shipment.override_token || '',
+              buyerToken: shipment.buyer_status_token || shipment.override_token || '',
             });
             emailCount++;
             console.log(`Sent cutoff locked email for ${shipment.tracking_number}`);
