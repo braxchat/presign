@@ -1,4 +1,3 @@
-// Force this route to run dynamically in Node.js
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
