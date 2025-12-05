@@ -117,23 +117,24 @@ export default function TermsPage() {
           <section>
             <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
               <DollarSign className="h-6 w-6 text-accent" />
-              Payment Terms
+              Subscription & Pricing
             </h2>
             <div className="space-y-4">
               <div>
-                <h3 className="font-semibold text-lg mb-2">Authorization Fee</h3>
+                <h3 className="font-semibold text-lg mb-2">Merchant Subscription</h3>
                 <p className="text-muted-foreground">
-                  Buyers pay a <strong>$2.99 authorization fee</strong> to authorize delivery release. 
-                  <strong>This fee is non-refundable once submitted</strong>, regardless of delivery outcome, 
-                  carrier acceptance, or any other circumstances.
+                  <strong>PreSign operates on a monthly subscription model for merchants.</strong> Subscription pricing 
+                  is based on your selected plan tier. Merchants are billed monthly in advance. All subscription fees 
+                  are non-refundable except as required by law.
                 </p>
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-2">Merchant Earnings</h3>
+                <h3 className="font-semibold text-lg mb-2">Buyer Authorization</h3>
                 <p className="text-muted-foreground">
-                  <strong>Merchants earn $1.00 per completed authorization.</strong> Earnings are calculated when a buyer 
-                  successfully completes the authorization process and payment is confirmed. Merchant earnings are tracked 
-                  in the merchant dashboard and can be requested for payout according to our payout terms.
+                  <strong>Buyers never pay PreSign directly.</strong> Authorization is free for buyers. PreSign provides 
+                  the authorization flow, documentation, and merchant instructions as part of the merchant's subscription 
+                  service. Any financial adjustments between merchants and buyers (refunds, reships, store credits) are 
+                  handled directly between those parties.
                 </p>
               </div>
             </div>

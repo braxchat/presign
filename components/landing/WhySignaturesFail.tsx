@@ -182,9 +182,9 @@ export function WhySignaturesFail() {
               </div>
               <div className="p-6 rounded-xl border border-border bg-card text-center">
                 <CheckCircle2 className="h-10 w-10 text-accent mx-auto mb-4" />
-                <h4 className="font-semibold text-lg mb-2">PDF included automatically in the Shopify order</h4>
+                <h4 className="font-semibold text-lg mb-2">Carrier-ready PDF waiver with instructions</h4>
                 <p className="text-sm text-muted-foreground">
-                  Documentation ready for merchant use
+                  Legally-composed documentation with step-by-step UPS/FedEx portal instructions
                 </p>
               </div>
               <div className="p-6 rounded-xl border border-border bg-card text-center">

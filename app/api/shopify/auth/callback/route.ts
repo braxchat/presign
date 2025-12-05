@@ -4,6 +4,7 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from 'next/server';
 import { shopify } from '@/lib/shopify';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { ensureShopifySubscription } from '@/lib/shopifyBilling';
 
 /**
  * Register a webhook using Shopify's official webhook registration system
@@ -87,7 +88,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Upsert merchant in Supabase
-    const { error: upsertError } = await supabaseAdmin
+    const { data: merchant, error: upsertError } = await supabaseAdmin
       .from('merchants')
       .upsert(
         {
@@ -95,6 +96,7 @@ export async function GET(request: NextRequest) {
           access_token: accessToken,
           business_name: merchantName || undefined,
           email: merchantEmail || undefined,
+          billing_provider: 'shopify',
           updated_at: new Date().toISOString(),
         },
         {
@@ -104,7 +106,7 @@ export async function GET(request: NextRequest) {
       .select()
       .single();
 
-    if (upsertError) {
+    if (upsertError || !merchant) {
       console.error('Failed to save merchant:', upsertError);
       return NextResponse.redirect(
         `${process.env.APP_BASE_URL}/login?error=database_error`
@@ -131,12 +133,16 @@ export async function GET(request: NextRequest) {
       console.error('Webhook registration error:', webhookError);
     }
 
-    // Create redirect response with cookie
-    const response = NextResponse.redirect(
-      `${process.env.APP_BASE_URL}/merchant/dashboard`
-    );
+    // Check onboarding status and redirect accordingly
+    // This works in embedded Shopify iframe because we use full URLs
+    const redirectUrl = merchant.onboarding_completed
+      ? `${process.env.APP_BASE_URL}/merchant/dashboard`
+      : `${process.env.APP_BASE_URL}/onboarding/start`;
+
+    const response = NextResponse.redirect(redirectUrl);
     
     // Set shop cookie for merchant session detection
+    // Important: sameSite: "none" and secure: true for iframe compatibility
     response.cookies.set("shop", shopDomain, {
       path: "/",
       httpOnly: false,

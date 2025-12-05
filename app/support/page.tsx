@@ -95,54 +95,64 @@ export default function SupportPage() {
                 {/* FAQ Item 1 */}
                 <div className="bg-card rounded-xl border border-border p-6">
                   <h3 className="font-semibold text-lg mb-2">
-                    How does PreSign work?
+                    Who is PreSign for?
                   </h3>
                   <p className="text-muted-foreground">
-                    When a merchant ships a signature-required package, PreSign automatically emails the buyer with a link to authorize delivery. The buyer pays $2.99 to authorize release, and the merchant receives a PDF authorization document to update carrier delivery instructions.
+                    PreSign is built for e-commerce merchants who ship high-value, signature-required orders and want to reduce failed deliveries, support tickets, and disputes.
                   </p>
                 </div>
 
                 {/* FAQ Item 2 */}
                 <div className="bg-card rounded-xl border border-border p-6">
                   <h3 className="font-semibold text-lg mb-2">
-                    What carriers does PreSign support?
+                    Do my customers pay anything to use PreSign?
                   </h3>
                   <p className="text-muted-foreground">
-                    PreSign is currently proccessing a partnership with UPS and FedEx to Automatically process remote signature delivery for shipments without the need for manual intervention from  the merchant. We're working on additional carrier integrations and will notify merchants when they become available.
+                    No. PreSign is a merchant tool. Your customers never pay us directly — they only see a clean, professional authorization experience when needed.
                   </p>
                 </div>
 
                 {/* FAQ Item 3 */}
                 <div className="bg-card rounded-xl border border-border p-6">
                   <h3 className="font-semibold text-lg mb-2">
-                    How much does PreSign cost?
+                    How does PreSign work?
                   </h3>
                   <p className="text-muted-foreground">
-                    PreSign is free to install with no monthly fees. Merchants earn $1.00 per successful override authorization. Buyers pay $2.99 to authorize delivery release.
+                    When a merchant ships a signature-required package, PreSign automatically emails the buyer with a link to authorize delivery. The buyer authorizes release and signs a waiver, and the merchant receives a carrier-ready PDF authorization document with step-by-step instructions for updating UPS/FedEx delivery instructions.
                   </p>
                 </div>
 
                 {/* FAQ Item 4 */}
                 <div className="bg-card rounded-xl border border-border p-6">
                   <h3 className="font-semibold text-lg mb-2">
-                    Is PreSign compliant with carrier policies?
+                    Does PreSign replace my UPS or FedEx portal?
                   </h3>
                   <p className="text-muted-foreground">
-                    PreSign provides authorization documentation only. We do not alter carrier rules or policies. Merchants must manually update delivery instructions with UPS or FedEx using the provided PDF authorization documents.
+                    No. PreSign doesn't replace your carrier tools. It automates the buyer authorization process and generates carrier-ready documentation and instructions your team can use in UPS or FedEx.
                   </p>
                 </div>
 
                 {/* FAQ Item 5 */}
                 <div className="bg-card rounded-xl border border-border p-6">
                   <h3 className="font-semibold text-lg mb-2">
-                    What is the PreSign Delivery Guarantee?
+                    Can PreSign change carrier signature requirements automatically?
                   </h3>
                   <p className="text-muted-foreground">
-                    If a carrier still requires a physical signature after a buyer has authorized release, the buyer can request a refund by emailing a photo of the official delivery attempt slip to refunds@presign.app. This guarantee applies only when an official UPS or FedEx delivery attempt slip is provided.
+                    Not directly. Carriers don't allow third-party apps to modify signature rules via API. PreSign focuses on capturing buyer consent and giving your team everything they need to request exceptions or process delivery instructions efficiently.
                   </p>
                 </div>
 
                 {/* FAQ Item 6 */}
+                <div className="bg-card rounded-xl border border-border p-6">
+                  <h3 className="font-semibold text-lg mb-2">
+                    How does billing work?
+                  </h3>
+                  <p className="text-muted-foreground">
+                    You pay a simple monthly subscription for unlimited use of PreSign. There are no per-authorization fees in the MVP.
+                  </p>
+                </div>
+
+                {/* FAQ Item 7 */}
                 <div className="bg-card rounded-xl border border-border p-6">
                   <h3 className="font-semibold text-lg mb-2">
                     How do I install PreSign on my Shopify store?
@@ -152,7 +162,7 @@ export default function SupportPage() {
                   </p>
                 </div>
 
-                {/* FAQ Item 7 */}
+                {/* FAQ Item 8 */}
                 <div className="bg-card rounded-xl border border-border p-6">
                   <h3 className="font-semibold text-lg mb-2">
                     Can buyers authorize delivery after the package is out for delivery?
@@ -162,23 +172,13 @@ export default function SupportPage() {
                   </p>
                 </div>
 
-                {/* FAQ Item 8 */}
-                <div className="bg-card rounded-xl border border-border p-6">
-                  <h3 className="font-semibold text-lg mb-2">
-                    How do I receive my merchant earnings?
-                  </h3>
-                  <p className="text-muted-foreground">
-                    Merchant earnings ($1.00 per override) are tracked in your dashboard. You can request payouts through the merchant dashboard. Payouts are processed according to your account settings.
-                  </p>
-                </div>
-
                 {/* FAQ Item 9 */}
                 <div className="bg-card rounded-xl border border-border p-6">
                   <h3 className="font-semibold text-lg mb-2">
-                    What happens if a buyer doesn't authorize delivery?
+                    How does PreSign help reduce chargebacks and disputes?
                   </h3>
                   <p className="text-muted-foreground">
-                    If a buyer doesn't authorize delivery, the package will follow standard carrier procedures and require a signature at delivery. PreSign does not interfere with normal carrier operations.
+                    PreSign generates legally-composed PDF waivers that document buyer consent and clearly state that buyers accept responsibility for packages once delivered. This documentation helps merchants prove authorization in chargeback disputes and reduces liability by shifting responsibility to the buyer who authorized delivery.
                   </p>
                 </div>
 
@@ -188,7 +188,7 @@ export default function SupportPage() {
                     Is buyer information secure?
                   </h3>
                   <p className="text-muted-foreground">
-                    Yes. PreSign uses industry-standard security practices to protect buyer information. All authorization transactions are processed securely through Stripe, and we comply with data protection regulations.
+                    Yes. PreSign uses industry-standard security practices to protect buyer information. All authorization data is encrypted and stored securely, and we comply with data protection regulations including GDPR and CCPA.
                   </p>
                 </div>
               </div>
@@ -283,7 +283,6 @@ export default function SupportPage() {
           </div>
           <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
             <p>&copy; {new Date().getFullYear()} PreSign. All rights reserved.</p>
-            <p className="mt-2 text-xs">Guarantee applies only when an official UPS or FedEx delivery attempt slip is provided.</p>
           </div>
         </div>
       </footer>

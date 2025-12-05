@@ -28,6 +28,15 @@ export type Database = {
           fedex_secret_key: string | null
           fedex_account_number: string | null
           fedex_meter_number: string | null
+          billing_provider: 'shopify' | 'stripe' | null
+          plan_tier: 'basic' | 'pro' | 'enterprise' | null
+          status: 'trialing' | 'active' | 'canceled' | 'past_due' | null
+          trial_end: string | null
+          shopify_subscription_id: string | null
+          shopify_plan_name: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          onboarding_completed: boolean
           created_at: string
           updated_at: string
         }
@@ -49,6 +58,15 @@ export type Database = {
           fedex_secret_key?: string | null
           fedex_account_number?: string | null
           fedex_meter_number?: string | null
+          billing_provider?: 'shopify' | 'stripe' | null
+          plan_tier?: 'basic' | 'pro' | 'enterprise' | null
+          status?: 'trialing' | 'active' | 'canceled' | 'past_due' | null
+          trial_end?: string | null
+          shopify_subscription_id?: string | null
+          shopify_plan_name?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          onboarding_completed?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -70,6 +88,15 @@ export type Database = {
           fedex_secret_key?: string | null
           fedex_account_number?: string | null
           fedex_meter_number?: string | null
+          billing_provider?: 'shopify' | 'stripe' | null
+          plan_tier?: 'basic' | 'pro' | 'enterprise' | null
+          status?: 'trialing' | 'active' | 'canceled' | 'past_due' | null
+          trial_end?: string | null
+          shopify_subscription_id?: string | null
+          shopify_plan_name?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          onboarding_completed?: boolean
           created_at?: string
           updated_at?: string
         }

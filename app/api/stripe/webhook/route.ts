@@ -7,10 +7,8 @@ import Stripe from 'stripe';
 import { headers } from 'next/headers';
 import { sendOverrideConfirmationEmail, sendAuthorizationPdfToMerchant } from '@/lib/email';
 import { createAuthorizationPdf } from '@/lib/pdf';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-11-17.clover',
-});
+import { stripe } from '@/lib/stripe';
+import { updateMerchantSubscriptionFromStripe } from '@/lib/stripeBilling';
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -195,6 +193,36 @@ export async function POST(request: NextRequest) {
       }
 
       console.log('Checkout completed for shipment:', shipment.id);
+    }
+
+    // Handle subscription events for merchant billing
+    if (event.type === 'customer.subscription.created') {
+      const subscription = event.data.object as Stripe.Subscription;
+      await updateMerchantSubscriptionFromStripe(subscription);
+      console.log('Subscription created for merchant:', subscription.metadata?.merchant_id);
+    }
+
+    if (event.type === 'customer.subscription.updated') {
+      const subscription = event.data.object as Stripe.Subscription;
+      await updateMerchantSubscriptionFromStripe(subscription);
+      console.log('Subscription updated for merchant:', subscription.metadata?.merchant_id);
+    }
+
+    if (event.type === 'customer.subscription.deleted') {
+      const subscription = event.data.object as Stripe.Subscription;
+      await updateMerchantSubscriptionFromStripe(subscription);
+      console.log('Subscription deleted for merchant:', subscription.metadata?.merchant_id);
+    }
+
+    if (event.type === 'invoice.payment_failed') {
+      const invoice = event.data.object as Stripe.Invoice;
+      if (invoice.subscription) {
+        const subscription = await stripe.subscriptions.retrieve(
+          typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription.id
+        );
+        await updateMerchantSubscriptionFromStripe(subscription);
+        console.log('Payment failed for subscription:', subscription.id);
+      }
     }
 
     return NextResponse.json({ received: true });

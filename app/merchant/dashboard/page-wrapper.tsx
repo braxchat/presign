@@ -3,9 +3,6 @@ import { requireOnboardingCompletion } from '@/lib/requireOnboarding';
 import { headers } from 'next/headers';
 import DashboardPageClient from './page-client';
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
-
 export default async function DashboardPage() {
   const headersList = await headers();
   

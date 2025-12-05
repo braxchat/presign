@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Package, Mail, CreditCard, FileText, ArrowLeft } from "lucide-react";
+import { Package, Mail, CheckCircle2, FileText, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function HowItWorksPage() {
@@ -49,11 +49,11 @@ export default function HowItWorksPage() {
               </div>
               <div className="text-center">
                 <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CreditCard className="h-8 w-8 text-accent" />
+                  <CheckCircle2 className="h-8 w-8 text-accent" />
                 </div>
                 <h3 className="font-semibold text-lg mb-2">Step 3</h3>
                 <p className="text-muted-foreground">
-                Buyer authorizes remote signature delivery for $2.99
+                  Buyer authorizes delivery and signs the waiver
                 </p>
               </div>
               <div className="text-center">
@@ -62,20 +62,9 @@ export default function HowItWorksPage() {
                 </div>
                 <h3 className="font-semibold text-lg mb-2">Step 4</h3>
                 <p className="text-muted-foreground">
-                The merchant receives the documentation, updates the delivery instructions, and earns $1 once the process is completed.
+                  Merchant receives PDF waiver and step-by-step instructions to update UPS/FedEx delivery instructions
                 </p>
               </div>
-            </div>
-            <div className="mt-12 p-6 rounded-xl border border-border bg-card max-w-2xl mx-auto">
-              <p className="text-sm text-muted-foreground text-center">
-                <strong className="text-foreground">PreSign Delivery Guarantee</strong> — If the carrier does not honor the authorized release and leaves an official missed-delivery slip, customers can request a refund by sending us a photo of the slip.
-              </p>
-            </div>
-            <div className="mt-12 p-6 rounded-xl border border-border bg-card max-w-2xl mx-auto">
-              <h3 className="font-semibold text-lg mb-3 text-center">Delivery Guarantee</h3>
-              <p className="text-sm text-muted-foreground text-center">
-                If a buyer authorizes release but the carrier still requires a physical signature, PreSign protects the customer with our Delivery Guarantee. Simply email a photo of the official &apos;missed delivery&apos; slip to <a href="mailto:refunds@presign.app" className="text-accent hover:underline">refunds@presign.app</a> and our team will review the refund request.
-              </p>
             </div>
           </div>
         </div>

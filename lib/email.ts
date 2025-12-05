@@ -123,7 +123,7 @@ export async function sendShipmentNotificationEmail({
 }: ShipmentNotificationParams) {
   const statusUrl = getStatusUrl(buyerToken);
   
-  const subject = `Your package requires a Direct Signature — authorize delivery`;
+  const subject = `Action Needed: Authorize Delivery for Your Package`;
   
   const content = `
     <!-- Header -->
@@ -139,75 +139,44 @@ export async function sendShipmentNotificationEmail({
         <p style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.6; color: #1f2937; font-weight: 500;">Hi ${buyerName},</p>
         
         <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
-          Great news! Your order from <strong style="color: #1f2937;">${merchantName}</strong> has shipped.
+          Your recent order from <strong style="color: #1f2937;">${merchantName}</strong> requires a signature upon delivery.
         </p>
         
-        <!-- Tracking Info Card -->
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+        <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+          To help ensure your package arrives without delay, please take a moment to authorize your delivery preferences.
+        </p>
+        
+        <!-- CTA Button -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0;">
           <tr>
-            <td style="padding: 20px;">
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-                <tr>
-                  <td style="padding: 0 0 12px 0;">
-                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Tracking Number</p>
-                    <p style="margin: 8px 0 0 0; font-size: 18px; font-family: 'Courier New', monospace; font-weight: 600; color: #1f2937; word-break: break-all;">${trackingNumber}</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 12px 0 0 0; border-top: 1px solid #e5e7eb;">
-                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Carrier</p>
-                    <p style="margin: 8px 0 0 0; font-size: 16px; font-weight: 500; color: #1f2937;">${carrier}</p>
-                  </td>
-                </tr>
-              </table>
+            <td align="center" style="padding: 0;">
+              <a href="${statusUrl}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);">
+                👉 Click here to authorize delivery
+              </a>
             </td>
           </tr>
         </table>
         
-        ${requiresSignature ? `
-          <!-- Signature Required Alert -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 6px;">
-            <tr>
-              <td style="padding: 16px 20px;">
-                <p style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #92400e;">
-                  ⚠️ Signature Required
-                </p>
-                <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #78350f;">
-                  This package requires a signature upon delivery. If you won't be home, you can authorize the carrier to leave the package without a signature.
-                </p>
-              </td>
-            </tr>
-          </table>
-          
-          <!-- CTA Button -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0;">
-            <tr>
-              <td align="center" style="padding: 0;">
-                <a href="${statusUrl}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);">
-                  Manage Delivery Preferences
-                </a>
-              </td>
-            </tr>
-          </table>
-        ` : `
-          <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
-            You can track your shipment status using the link below:
-          </p>
-          
-          <!-- CTA Button -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0;">
-            <tr>
-              <td align="center" style="padding: 0;">
-                <a href="${statusUrl}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);">
-                  Track Your Package
-                </a>
-              </td>
-            </tr>
-          </table>
-        `}
+        <!-- What You'll Do Section -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+          <tr>
+            <td style="padding: 20px;">
+              <p style="margin: 0 0 12px 0; font-size: 15px; font-weight: 600; color: #1f2937;">What you'll do:</p>
+              <ul style="margin: 0; padding-left: 20px; color: #4b5563; font-size: 14px; line-height: 1.8;">
+                <li>Confirm your shipping address</li>
+                <li>Review the delivery release terms</li>
+                <li>Provide a signature</li>
+              </ul>
+            </td>
+          </tr>
+        </table>
+        
+        <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+          Once complete, <strong style="color: #1f2937;">${merchantName}</strong> will process your authorization with the carrier.
+        </p>
         
         <p style="margin: 0 0 30px 0; font-size: 14px; line-height: 1.6; color: #6b7280;">
-          If you have any questions about your order, please contact <strong style="color: #1f2937;">${merchantName}</strong> directly.
+          If you have any questions, simply reply to this email.
         </p>
         
         <!-- Divider -->
@@ -218,8 +187,12 @@ export async function sendShipmentNotificationEmail({
         </table>
         
         <!-- Footer -->
+        <p style="margin: 0 0 8px 0; font-size: 14px; line-height: 1.6; color: #4b5563; text-align: center;">
+          Thank you,<br />
+          <strong style="color: #1f2937;">${merchantName}</strong>
+        </p>
         <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center;">
-          Sent automatically by <strong style="color: #6b7280;">${APP_NAME}</strong>
+          Powered by <strong style="color: #6b7280;">${APP_NAME}</strong>
         </p>
       </td>
     </tr>
@@ -230,24 +203,25 @@ export async function sendShipmentNotificationEmail({
   const text = `
 Hi ${buyerName},
 
-Great news! Your order from ${merchantName} has shipped.
+Your recent order from ${merchantName} requires a signature upon delivery.
 
-Tracking Number: ${trackingNumber}
-Carrier: ${carrier}
+To help ensure your package arrives without delay, please take a moment to authorize your delivery preferences.
 
-${requiresSignature ? `
-SIGNATURE REQUIRED
-This package requires a signature upon delivery. If you won't be home, you can authorize the carrier to leave the package without a signature.
+👉 Click here to authorize delivery: ${statusUrl}
 
-Manage your delivery preferences: ${statusUrl}
-` : `
-Track your package: ${statusUrl}
-`}
+What you'll do:
+• Confirm your shipping address
+• Review the delivery release terms
+• Provide a signature
 
-If you have any questions about your order, please contact ${merchantName} directly.
+Once complete, ${merchantName} will process your authorization with the carrier.
 
----
-Sent automatically by ${APP_NAME}
+If you have any questions, simply reply to this email.
+
+Thank you,
+${merchantName}
+
+Powered by ${APP_NAME}
   `.trim();
 
   try {
@@ -296,7 +270,7 @@ export async function sendOverrideConfirmationEmail({
 }: OverrideConfirmationParams) {
   const statusUrl = getStatusUrl(buyerToken);
   
-  const subject = `Signature release authorized for your ${merchantName} shipment`;
+  const subject = `Delivery Authorization Received`;
   
   const content = `
     <!-- Header -->
@@ -313,7 +287,7 @@ export async function sendOverrideConfirmationEmail({
           <tr>
             <td>
               <p style="margin: 0; font-size: 15px; font-weight: 600; color: #065f46; letter-spacing: 0.3px;">
-                ✓ Signature Release Authorized
+                ✓ Authorization Received
               </p>
             </td>
           </tr>
@@ -327,75 +301,16 @@ export async function sendOverrideConfirmationEmail({
         <p style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.6; color: #1f2937; font-weight: 500;">Hi ${buyerName},</p>
         
         <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
-          You have successfully authorized the carrier to release your package without requiring a signature at delivery.
+          We've received your delivery authorization for tracking number <strong style="color: #1f2937;">${trackingNumber}</strong>.
         </p>
         
-        <!-- Tracking Info Card -->
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
-          <tr>
-            <td style="padding: 20px;">
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-                <tr>
-                  <td style="padding: 0 0 12px 0;">
-                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Tracking Number</p>
-                    <p style="margin: 8px 0 0 0; font-size: 18px; font-family: 'Courier New', monospace; font-weight: 600; color: #1f2937; word-break: break-all;">${trackingNumber}</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 12px 0; border-top: 1px solid #e5e7eb;">
-                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Carrier</p>
-                    <p style="margin: 8px 0 0 0; font-size: 16px; font-weight: 500; color: #1f2937;">${carrier}</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 12px 0 0 0; border-top: 1px solid #e5e7eb;">
-                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280;">Authorized by</p>
-                    <p style="margin: 8px 0 0 0; font-size: 16px; font-weight: 500; color: #1f2937;">${typedName}</p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
+        <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+          Your seller, <strong style="color: #1f2937;">${merchantName}</strong>, has been notified and will process your delivery instructions with the carrier.
+        </p>
         
-        <!-- Info Box -->
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #eff6ff; border-left: 4px solid #2563eb; border-radius: 6px;">
-          <tr>
-            <td style="padding: 16px 20px;">
-              <p style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #1e40af;">
-                What happens next?
-              </p>
-              <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #1e3a8a;">
-                The carrier will leave your package at your delivery address without requiring a signature. Please ensure a safe delivery location is available.
-              </p>
-            </td>
-          </tr>
-        </table>
-        
-        <!-- Delivery Guarantee Box -->
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 6px;">
-          <tr>
-            <td style="padding: 16px 20px;">
-              <p style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #92400e;">
-                PreSign Delivery Guarantee
-              </p>
-              <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #78350f;">
-                If your carrier still requires a physical signature even after authorizing release, PreSign provides a Delivery Guarantee. If this occurs, take a photo of the official ${carrier} delivery attempt slip and email it to <a href="mailto:refunds@presign.app" style="color: #92400e; text-decoration: underline;">refunds@presign.app</a>.
-              </p>
-            </td>
-          </tr>
-        </table>
-        
-        <!-- CTA Button -->
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0;">
-          <tr>
-            <td align="center" style="padding: 0;">
-              <a href="${statusUrl}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);">
-                View Shipment Status
-              </a>
-            </td>
-          </tr>
-        </table>
+        <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+          No further action is needed from you.
+        </p>
         
         <!-- Divider -->
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
@@ -405,8 +320,12 @@ export async function sendOverrideConfirmationEmail({
         </table>
         
         <!-- Footer -->
+        <p style="margin: 0 0 8px 0; font-size: 14px; line-height: 1.6; color: #4b5563; text-align: center;">
+          Thank you,<br />
+          <strong style="color: #1f2937;">${merchantName}</strong>
+        </p>
         <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center;">
-          Sent automatically by <strong style="color: #6b7280;">${APP_NAME}</strong>
+          Powered by <strong style="color: #6b7280;">${APP_NAME}</strong>
         </p>
       </td>
     </tr>
@@ -417,24 +336,16 @@ export async function sendOverrideConfirmationEmail({
   const text = `
 Hi ${buyerName},
 
-SIGNATURE RELEASE AUTHORIZED ✓
+We've received your delivery authorization for tracking number ${trackingNumber}.
 
-You have successfully authorized the carrier to release your package without requiring a signature at delivery.
+Your seller, ${merchantName}, has been notified and will process your delivery instructions with the carrier.
 
-Tracking Number: ${trackingNumber}
-Carrier: ${carrier}
-Authorized by: ${typedName}
+No further action is needed from you.
 
-WHAT HAPPENS NEXT?
-The carrier will leave your package at your delivery address without requiring a signature. Please ensure a safe delivery location is available.
+Thank you,
+${merchantName}
 
-PRESIGN DELIVERY GUARANTEE
-If your carrier still requires a physical signature even after authorizing release, PreSign provides a Delivery Guarantee. If this occurs, take a photo of the official ${carrier} delivery attempt slip and email it to refunds@presign.app.
-
-View shipment status: ${statusUrl}
-
----
-Sent automatically by ${APP_NAME}
+Powered by ${APP_NAME}
   `.trim();
 
   try {
@@ -661,7 +572,7 @@ export async function sendAuthorizationPdfToMerchant({
   const safeTracking = trackingNumber || 'N/A';
   const safeOrderId = orderId || 'N/A';
 
-  const subject = `Buyer Authorized Remote Delivery — Action Required`;
+  const subject = `Delivery Authorization Ready for ${safeTracking}`;
 
   const content = `
     <!-- Header -->
@@ -674,26 +585,29 @@ export async function sendAuthorizationPdfToMerchant({
     <!-- Main Content -->
     <tr>
       <td style="padding: 40px 30px;">
-        <p style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.6; color: #1f2937; font-weight: 500;">Hello ${safeMerchantName},</p>
+        <p style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.6; color: #1f2937; font-weight: 500;">Hi ${safeMerchantName},</p>
         
         <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
-          Your buyer <strong style="color: #1f2937;">${buyerName}</strong> has completed a remote delivery authorization for:
+          Your customer has completed their delivery authorization for order <strong style="color: #1f2937;">${safeOrderId}</strong>.
         </p>
         
-        <!-- Shipment Info Card -->
+        <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+          Attached is the signed PDF waiver, including:
+        </p>
+        
+        <!-- Features List -->
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
           <tr>
             <td style="padding: 20px;">
-              <p style="margin: 0 0 12px 0; font-size: 14px; line-height: 1.6; color: #374151;"><strong>Order ID:</strong> ${safeOrderId}</p>
-              <p style="margin: 0 0 12px 0; font-size: 14px; line-height: 1.6; color: #374151;"><strong>Tracking:</strong> ${safeTracking}</p>
-              <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #374151;"><strong>Carrier:</strong> ${safeCarrier}</p>
+              <ul style="margin: 0; padding-left: 20px; color: #4b5563; font-size: 14px; line-height: 1.8;">
+                <li>Buyer's signature</li>
+                <li>Address and shipment details</li>
+                <li>Timestamped consent</li>
+                <li>Release language</li>
+              </ul>
             </td>
           </tr>
         </table>
-        
-        <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
-          You can download the signed authorization PDF here:
-        </p>
         
         <!-- PDF Download Button -->
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0;">
@@ -706,53 +620,42 @@ export async function sendAuthorizationPdfToMerchant({
           </tr>
         </table>
         
-        <!-- Action Required Alert -->
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px;">
+        <!-- What to Do Next Section -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0; background-color: #eff6ff; border-left: 4px solid #2563eb; border-radius: 6px;">
           <tr>
             <td style="padding: 16px 20px;">
-              <p style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #92400e;">
-                ⚠️ Action Required
+              <p style="margin: 0 0 12px 0; font-size: 15px; font-weight: 600; color: #1e40af;">
+                What to do next:
               </p>
-              <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #78350f;">
-                You must manually update UPS/FedEx delivery instructions before the next delivery attempt. This PDF authorization confirms the buyer's consent but does not automatically modify carrier systems.
-              </p>
+              <ol style="margin: 0; padding-left: 20px; color: #1e3a8a; font-size: 14px; line-height: 1.8;">
+                <li>Log into your UPS or FedEx portal</li>
+                <li>Open the shipment for tracking number <strong>${safeTracking}</strong></li>
+                <li>Follow the steps in the attached instructions to apply the customer's authorization</li>
+                <li>Submit the request before the next delivery attempt</li>
+              </ol>
             </td>
           </tr>
         </table>
         
+        <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+          This helps you avoid failed signature deliveries and protects your business with clear documentation.
+        </p>
+        
+        <p style="margin: 0 0 30px 0; font-size: 14px; line-height: 1.6; color: #6b7280;">
+          If you have questions, reply to this email.
+        </p>
+        
         <!-- Divider -->
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
           <tr>
             <td style="border-top: 1px solid #e5e7eb;"></td>
           </tr>
         </table>
         
-        <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
-          Manage this shipment and all overrides in your dashboard:
+        <!-- Footer -->
+        <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center;">
+          — ${APP_NAME}
         </p>
-        
-        <!-- Dashboard Button -->
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0;">
-          <tr>
-            <td align="center" style="padding: 0;">
-              <a href="${dashboardUrl}" style="display: inline-block; background-color: #1a1a2e; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; box-shadow: 0 4px 6px rgba(26, 26, 46, 0.25);">
-                Open Merchant Dashboard
-              </a>
-            </td>
-          </tr>
-        </table>
-        
-        <!-- Warning Note -->
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 0 0; background-color: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 6px;">
-          <tr>
-            <td style="padding: 16px 20px;">
-              <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #92400e;">
-                <strong>Note:</strong> This authorization confirms the buyer accepts responsibility for the package after delivery,
-                including loss, theft, or damage. You may still need to update delivery options with the carrier.
-              </p>
-            </td>
-          </tr>
-        </table>
       </td>
     </tr>
   `;
@@ -760,22 +663,29 @@ export async function sendAuthorizationPdfToMerchant({
   const html = getEmailTemplate(content);
 
   const text = `
-Hello ${safeMerchantName},
+Hi ${safeMerchantName},
 
-Your buyer ${buyerName} has completed a remote delivery authorization for:
+Your customer has completed their delivery authorization for order ${safeOrderId}.
 
-Order ID: ${safeOrderId}
-Tracking: ${safeTracking}
-Carrier: ${safeCarrier}
+Attached is the signed PDF waiver, including:
+• Buyer's signature
+• Address and shipment details
+• Timestamped consent
+• Release language
 
-Download the signed authorization PDF: ${pdfUrl}
+Download the PDF: ${pdfUrl}
 
-⚠️ ACTION REQUIRED: You must manually update UPS/FedEx delivery instructions before the next delivery attempt. This PDF authorization confirms the buyer's consent but does not automatically modify carrier systems.
+What to do next:
+1. Log into your UPS or FedEx portal
+2. Open the shipment for tracking number ${safeTracking}
+3. Follow the steps in the attached instructions to apply the customer's authorization
+4. Submit the request before the next delivery attempt
 
-Manage this shipment and all overrides in your dashboard: ${dashboardUrl}
+This helps you avoid failed signature deliveries and protects your business with clear documentation.
 
-Note: This authorization confirms the buyer accepts responsibility for the package after delivery,
-including loss, theft, or damage. You may still need to update delivery options with the carrier.
+If you have questions, reply to this email.
+
+— ${APP_NAME}
   `.trim();
 
   try {
@@ -796,6 +706,122 @@ including loss, theft, or damage. You may still need to update delivery options 
     return data;
   } catch (error) {
     console.error('Error sending merchant authorization email:', error);
+    throw error;
+  }
+}
+
+interface DeliveryAttemptReminderParams {
+  merchantEmail: string;
+  merchantName: string | null;
+  trackingNumber: string | null;
+  merchantShipmentLink: string;
+}
+
+/**
+ * Send reminder to merchant when delivery attempt is approaching
+ * Optional: Use after UPS/FedEx Tracking API is integrated
+ */
+export async function sendDeliveryAttemptReminderEmail({
+  merchantEmail,
+  merchantName,
+  trackingNumber,
+  merchantShipmentLink,
+}: DeliveryAttemptReminderParams) {
+  if (!merchantEmail) {
+    console.warn('No merchant email provided, skipping email');
+    return;
+  }
+
+  const safeMerchantName = merchantName || 'Merchant';
+  const safeTracking = trackingNumber || 'N/A';
+
+  const subject = `Reminder: Delivery Attempt Approaching for ${safeTracking}`;
+
+  const content = `
+    <!-- Header -->
+    <tr>
+      <td style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px 30px; text-align: center;">
+        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">${APP_NAME}</h1>
+      </td>
+    </tr>
+    
+    <!-- Main Content -->
+    <tr>
+      <td style="padding: 40px 30px;">
+        <p style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.6; color: #1f2937; font-weight: 500;">Hi ${safeMerchantName},</p>
+        
+        <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+          A delivery attempt for tracking number <strong style="color: #1f2937;">${safeTracking}</strong> is expected soon.
+        </p>
+        
+        <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+          A buyer authorization has already been collected for this shipment.
+        </p>
+        
+        <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
+          Please ensure you've submitted the required instructions through your carrier portal before the next attempt.
+        </p>
+        
+        <!-- Dashboard Link -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 30px 0;">
+          <tr>
+            <td align="center" style="padding: 0;">
+              <a href="${merchantShipmentLink}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);">
+                View Shipment Details
+              </a>
+            </td>
+          </tr>
+        </table>
+        
+        <!-- Divider -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
+          <tr>
+            <td style="border-top: 1px solid #e5e7eb;"></td>
+          </tr>
+        </table>
+        
+        <!-- Footer -->
+        <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center;">
+          — ${APP_NAME}
+        </p>
+      </td>
+    </tr>
+  `;
+
+  const html = getEmailTemplate(content);
+
+  const text = `
+Hi ${safeMerchantName},
+
+A delivery attempt for tracking number ${safeTracking} is expected soon.
+
+A buyer authorization has already been collected for this shipment.
+
+Please ensure you've submitted the required instructions through your carrier portal before the next attempt.
+
+Your documentation link: ${merchantShipmentLink}
+
+— ${APP_NAME}
+  `.trim();
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: DEFAULT_SENDER,
+      to: merchantEmail,
+      subject,
+      html,
+      text,
+    });
+
+    if (error) {
+      console.error('Failed to send delivery attempt reminder email:', error);
+      throw error;
+    }
+
+    console.log('Delivery attempt reminder email sent:', data?.id);
+    return data;
+  } catch (error) {
+    console.error('Error sending delivery attempt reminder email:', error);
     throw error;
   }
 }

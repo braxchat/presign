@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Package, DollarSign, Package2, Settings } from "lucide-react";
+import { Package, Users, FileText, Settings } from "lucide-react";
 
 async function isAdminAuthenticated(): Promise<boolean> {
   const cookieStore = await cookies();
@@ -64,18 +64,18 @@ export default async function AdminLayout({
             </Link>
             <div className="flex items-center gap-6">
               <Link
-                href="/admin/refunds"
+                href="/admin/merchants"
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                <DollarSign className="h-4 w-4" />
-                Refunds
+                <Users className="h-4 w-4" />
+                Merchants
               </Link>
               <Link
-                href="/admin/shipments"
+                href="/admin/authorizations"
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                <Package2 className="h-4 w-4" />
-                Shipments
+                <FileText className="h-4 w-4" />
+                Authorizations
               </Link>
               <Link
                 href="/admin/settings"

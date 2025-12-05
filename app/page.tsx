@@ -3,6 +3,7 @@ import { cookies, headers } from "next/headers";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { WhySignaturesFail } from "@/components/landing/WhySignaturesFail";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { 
   Package, 
   Mail, 
@@ -36,9 +37,27 @@ export default async function Page({
   const params = await searchParams;
   const shopParam = params?.shop;
 
-  // If any Shopify indicator exists, redirect to dashboard
+  // If any Shopify indicator exists, check onboarding and redirect accordingly
   if (shop || shopHeader || shopifyHmac || shopParam) {
-    redirect("/merchant/dashboard");
+    const shopDomain = shop || shopHeader || shopParam;
+    
+    if (shopDomain) {
+      // Get merchant onboarding status
+      const { data: merchant } = await supabaseAdmin
+        .from('merchants')
+        .select('onboarding_completed')
+        .eq('shop_domain', shopDomain)
+        .single();
+
+      const redirectPath = merchant?.onboarding_completed
+        ? '/merchant/dashboard'
+        : '/onboarding/start';
+      
+      redirect(redirectPath);
+    } else {
+      // Fallback to dashboard if we can't determine shop
+      redirect("/merchant/dashboard");
+    }
   }
 
   // Public landing page
@@ -53,6 +72,12 @@ export default async function Page({
               <span className="font-display font-bold text-xl">PreSign</span>
             </Link>
             <div className="flex items-center gap-4">
+              <Link href="#features" className="text-sm text-muted-foreground hover:text-foreground">
+                Features
+              </Link>
+              <Link href="#pricing" className="text-sm text-muted-foreground hover:text-foreground">
+                Pricing
+              </Link>
               <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground">
                 Sign In
               </Link>
@@ -72,26 +97,21 @@ export default async function Page({
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-              Reduce Failed Deliveries for
-              <br />
-              <span className="text-accent">Signature-Required Packages</span>
+              Reduce Failed Deliveries for Signature-Required Orders.
             </h1>
-            <p className="text-xl text-muted-foreground mb-4 max-w-2xl mx-auto">
-              Give customers a simple, secure way to authorize delivery—before the carrier arrives.
-            </p>
-            <p className="text-sm text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Merchants earn an extra $1.00 on every remote authorization from the customer, with no fees and free installation. If a carrier still requires a physical signature, customers can request a refund by submitting the missed-delivery notice.
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Automate buyer authorization, collect liability waivers, and streamline UPS/FedEx exception workflows — all in one place.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" variant="accent" className="text-base px-8 py-6">
                 <a href="https://apps.shopify.com/presign" target="_blank" rel="noopener noreferrer">
-                  Install on Shopify
+                  Start Free 14-Day Trial
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </a>
               </Button>
               <Button asChild size="lg" variant="outline" className="text-base px-8 py-6">
                 <a href="#how-it-works">
-                  Learn How It Works
+                  See How PreSign Works
                 </a>
               </Button>
             </div>
@@ -107,57 +127,52 @@ export default async function Page({
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-center mb-12">
-              How It Works
+              How PreSign Fits Into Your Shipping Workflow
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
               <div className="text-center">
                 <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Package className="h-8 w-8 text-accent" />
                 </div>
-                <h3 className="font-semibold text-lg mb-2">Step 1</h3>
+                <h3 className="font-semibold text-lg mb-2">Step 1 – Detect signature-required orders</h3>
                 <p className="text-muted-foreground">
-                After free installation - Merchants can ship an order that requires Direct Signature
+                  Flag orders that need a signature using your existing Shopify fulfillment flow or order tags. PreSign watches for these orders and automatically starts the authorization process.
                 </p>
               </div>
               <div className="text-center">
                 <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Mail className="h-8 w-8 text-accent" />
                 </div>
-                <h3 className="font-semibold text-lg mb-2">Step 2</h3>
+                <h3 className="font-semibold text-lg mb-2">Step 2 – Collect buyer authorization</h3>
                 <p className="text-muted-foreground">
-                  PreSign automatically emails the buyer
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CreditCard className="h-8 w-8 text-accent" />
-                </div>
-                <h3 className="font-semibold text-lg mb-2">Step 3</h3>
-                <p className="text-muted-foreground">
-                Buyer authorizes remote signature delivery for $2.99
+                  PreSign emails the customer a secure link to confirm their delivery preferences, accept the terms, and draw a signature. We generate a timestamped, carrier-ready authorization in the background.
                 </p>
               </div>
               <div className="text-center">
                 <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <FileText className="h-8 w-8 text-accent" />
                 </div>
-                <h3 className="font-semibold text-lg mb-2">Step 4</h3>
+                <h3 className="font-semibold text-lg mb-2">Step 3 – Receive a ready-to-use waiver and instructions</h3>
                 <p className="text-muted-foreground">
-                The merchant receives the documentation, updates the delivery instructions, and earns $1 once the process is completed.
+                  Your team receives a clean PDF waiver plus step-by-step instructions for how to process the exception through your UPS or FedEx portal. No guesswork, no frantic calls with the buyer.
                 </p>
               </div>
-            </div>
-            <div className="mt-12 p-6 rounded-xl border border-border bg-card max-w-2xl mx-auto">
-              <p className="text-sm text-muted-foreground text-center">
-                <strong className="text-foreground">PreSign Delivery Guarantee</strong> — If the carrier does not honor the authorized release and leaves an official missed-delivery slip, customers can request a refund by sending us a photo of the slip.
-              </p>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Shield className="h-8 w-8 text-accent" />
+                </div>
+                <h3 className="font-semibold text-lg mb-2">Step 4 – Reduce failed deliveries and protect your business</h3>
+                <p className="text-muted-foreground">
+                  With buyer consent documented and clear internal steps, you cut down on failed delivery attempts, frustrated customers, and liability disputes — especially when shipping high-value items.
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20">
+      <section id="features" className="py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-center mb-12">
@@ -166,16 +181,37 @@ export default async function Page({
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               <div className="p-6 rounded-xl border border-border bg-card">
                 <Users className="h-10 w-10 text-accent mb-4" />
-                <h3 className="font-semibold text-lg mb-2">Buyer Authorization Flow</h3>
+                <h3 className="font-semibold text-lg mb-2">Automated buyer authorization workflow</h3>
                 <p className="text-muted-foreground">
                   Seamless, secure process for customers to authorize delivery release
                 </p>
               </div>
               <div className="p-6 rounded-xl border border-border bg-card">
-                <BarChart3 className="h-10 w-10 text-accent mb-4" />
-                <h3 className="font-semibold text-lg mb-2">Merchant Dashboard</h3>
+                <FileText className="h-10 w-10 text-accent mb-4" />
+                <h3 className="font-semibold text-lg mb-2">Legally compliant PDF waiver generation</h3>
                 <p className="text-muted-foreground">
-                  Track all shipments, overrides, and earnings in one place
+                  Legally-composed PDF waivers document buyer consent and shift delivery liability
+                </p>
+              </div>
+              <div className="p-6 rounded-xl border border-border bg-card">
+                <Download className="h-10 w-10 text-accent mb-4" />
+                <h3 className="font-semibold text-lg mb-2">Clear step-by-step UPS/FedEx exception instructions</h3>
+                <p className="text-muted-foreground">
+                  Detailed instructions for updating carrier delivery instructions through UPS/FedEx portals
+                </p>
+              </div>
+              <div className="p-6 rounded-xl border border-border bg-card">
+                <CheckCircle2 className="h-10 w-10 text-accent mb-4" />
+                <h3 className="font-semibold text-lg mb-2">Reduce failed delivery attempts and customer frustration</h3>
+                <p className="text-muted-foreground">
+                  Increase first-attempt delivery success rates and improve customer satisfaction
+                </p>
+              </div>
+              <div className="p-6 rounded-xl border border-border bg-card">
+                <Shield className="h-10 w-10 text-accent mb-4" />
+                <h3 className="font-semibold text-lg mb-2">Protect your business from delivery-related disputes</h3>
+                <p className="text-muted-foreground">
+                  Document buyer consent to reduce chargebacks and liability disputes
                 </p>
               </div>
               <div className="p-6 rounded-xl border border-border bg-card">
@@ -183,27 +219,6 @@ export default async function Page({
                 <h3 className="font-semibold text-lg mb-2">Shopify App Integration</h3>
                 <p className="text-muted-foreground">
                   Automatically syncs with your Shopify orders and fulfillments
-                </p>
-              </div>
-              <div className="p-6 rounded-xl border border-border bg-card">
-                <Download className="h-10 w-10 text-accent mb-4" />
-                <h3 className="font-semibold text-lg mb-2">Authorization PDFs</h3>
-                <p className="text-muted-foreground">
-                  Downloadable documentation for each authorization
-                </p>
-              </div>
-              <div className="p-6 rounded-xl border border-border bg-card">
-                <CheckCircle2 className="h-10 w-10 text-accent mb-4" />
-                <h3 className="font-semibold text-lg mb-2">Reduced Failed Delivery Attempts</h3>
-                <p className="text-muted-foreground">
-                  Increase first-attempt delivery success rates
-                </p>
-              </div>
-              <div className="p-6 rounded-xl border border-border bg-card">
-                <Shield className="h-10 w-10 text-accent mb-4" />
-                <h3 className="font-semibold text-lg mb-2">100% Buyer-Initiated</h3>
-                <p className="text-muted-foreground">
-                  Customers choose when and how to authorize delivery
                 </p>
               </div>
             </div>
@@ -251,7 +266,7 @@ export default async function Page({
                         <span className="text-sm text-muted-foreground">Signature Required</span>
                       </div>
                       <button className="w-full bg-accent text-white py-2 px-4 rounded-md text-sm font-medium">
-                        Authorize Delivery — $2.99
+                        Authorize Delivery
                       </button>
                     </div>
                   </div>
@@ -391,82 +406,55 @@ export default async function Page({
         </div>
       </section>
 
-      {/* Carrier Integrations Section */}
-      <section className="py-20 bg-muted/30">
+      {/* Pricing Section */}
+      <section id="pricing" className="py-20 bg-muted/30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
-            <h2 className="font-display text-3xl sm:text-4xl font-bold text-center mb-4">
-              Carrier Integrations
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-center mb-12">
+              Simple pricing for serious shipments.
             </h2>
-            <p className="text-center text-muted-foreground mb-12">
-              Coming Soon
-            </p>
-            <div className="grid md:grid-cols-2 gap-8">
-              {/* UPS Card */}
-              <div className="p-8 rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-center mb-6">
-                  <div className="w-24 h-24 bg-[#7BAB6E] rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-2xl">UPS</span>
+            <div className="max-w-md mx-auto">
+              <div className="bg-card rounded-xl border border-border p-8 shadow-lg">
+                <div className="text-center mb-6">
+                  <h3 className="font-display text-2xl font-bold text-foreground mb-2">
+                    PreSign for Merchants
+                  </h3>
+                  <div className="flex items-baseline justify-center gap-2 mb-2">
+                    <span className="font-display text-5xl font-bold text-foreground">$19</span>
+                    <span className="text-xl text-muted-foreground">/month</span>
                   </div>
+                  <p className="text-sm text-muted-foreground">
+                    14-day free trial. No contracts. Cancel anytime.
+                  </p>
                 </div>
-                <h3 className="font-semibold text-xl text-center mb-2">UPS</h3>
-                <p className="text-center text-sm font-medium text-muted-foreground mb-4">
-                  Coming Soon
-                </p>
-                <p className="text-center text-sm text-muted-foreground">
-                  OAuth-based API integration coming after UPS approval.
-                </p>
-              </div>
-
-              {/* FedEx Card */}
-              <div className="p-8 rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-center mb-6">
-                  <div className="w-24 h-24 bg-[#4D148C] rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-xl">FedEx</span>
-                  </div>
-                </div>
-                <h3 className="font-semibold text-xl text-center mb-2">FedEx</h3>
-                <p className="text-center text-sm font-medium text-muted-foreground mb-4">
-                  Coming Soon
-                </p>
-                <p className="text-center text-sm text-muted-foreground">
-                  Delivery instruction automation coming soon.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Shopify App Section */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <Store className="h-16 w-16 text-accent mx-auto mb-6" />
-            <h2 className="font-display text-3xl sm:text-4xl font-bold mb-4">
-              Available for Shopify Merchants
-            </h2>
-            <p className="text-xl text-muted-foreground mb-8">
-              Install PreSign in minutes and start reducing failed deliveries today
-            </p>
-            <Button asChild size="lg" variant="accent" className="text-base px-8 py-6">
-              <a href={`/api/shopify/auth/install?shop=your-store.myshopify.com`}>
-                Install on Shopify
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </a>
-            </Button>
-            <div className="mt-12 flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-accent" />
-                <span>Free to install</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-accent" />
-                <span>No monthly fees</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-accent" />
-                <span>Earn $1.00 per override</span>
+                <ul className="space-y-4 mb-8">
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
+                    <span className="text-muted-foreground">Unlimited buyer authorizations</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
+                    <span className="text-muted-foreground">Unlimited PDF waivers</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
+                    <span className="text-muted-foreground">UPS/FedEx exception instructions</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
+                    <span className="text-muted-foreground">Shopify order tagging and status updates</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
+                    <span className="text-muted-foreground">Email notifications for buyers and merchants</span>
+                  </li>
+                </ul>
+                <Button asChild size="lg" variant="accent" className="w-full text-base px-8 py-6">
+                  <a href="https://apps.shopify.com/presign" target="_blank" rel="noopener noreferrer">
+                    Start Free 14-Day Trial
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </a>
+                </Button>
               </div>
             </div>
           </div>
@@ -515,7 +503,7 @@ export default async function Page({
               Ready to Reduce Failed Deliveries?
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Start using PreSign today and give your customers the flexibility they need.
+              Start reducing failed deliveries, chargebacks, and support tickets with automated buyer authorization.
             </p>
             <Button asChild size="lg" variant="accent" className="text-base px-8 py-6">
               <a href={`/api/shopify/auth/install?shop=your-store.myshopify.com`}>
@@ -558,6 +546,11 @@ export default async function Page({
                     FAQ
                   </Link>
                 </li>
+                <li>
+                  <Link href="#pricing" className="hover:text-foreground">
+                    Pricing
+                  </Link>
+                </li>
               </ul>
             </div>
             <div>
@@ -593,7 +586,6 @@ export default async function Page({
           </div>
           <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
             <p>&copy; {new Date().getFullYear()} PreSign. All rights reserved.</p>
-            <p className="mt-2 text-xs">Guarantee applies only when an official UPS or FedEx delivery attempt slip is provided.</p>
           </div>
         </div>
       </footer>

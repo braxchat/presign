@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   LogOut,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ const navItems = [
   { icon: Package, label: "Shipments", path: "/merchant/shipments" },
   { icon: Plus, label: "Add Shipment", path: "/merchant/shipments/new" },
   { icon: DollarSign, label: "Payouts", path: "/merchant/payouts" },
+  { icon: CreditCard, label: "Billing", path: "/merchant/billing" },
   { icon: Settings, label: "Settings", path: "/merchant/settings" },
 ];
 
