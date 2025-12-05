@@ -267,6 +267,48 @@ export type Database = {
           }
         ]
       }
+      shopify_sessions: {
+        Row: {
+          id: string
+          shop: string
+          state: string | null
+          is_online: boolean
+          scope: string | null
+          expires: string | null
+          access_token: string | null
+          user_id: string | null
+          session_data: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          shop: string
+          state?: string | null
+          is_online?: boolean
+          scope?: string | null
+          expires?: string | null
+          access_token?: string | null
+          user_id?: string | null
+          session_data?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          shop?: string
+          state?: string | null
+          is_online?: boolean
+          scope?: string | null
+          expires?: string | null
+          access_token?: string | null
+          user_id?: string | null
+          session_data?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

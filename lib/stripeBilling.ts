@@ -1,4 +1,5 @@
 import 'server-only';
+import Stripe from 'stripe';
 import { stripe } from './stripe';
 import { supabaseAdmin } from './supabase-admin';
 
@@ -75,7 +76,7 @@ export async function createStripeSubscriptionForMerchant(
   const priceId = getPriceIdForPlan(planTier);
 
   // Create subscription with 14-day trial
-  const subscription = await stripe.subscriptions.create({
+  const subscription: Stripe.Subscription = await stripe.subscriptions.create({
     customer: customerId,
     items: [
       {
@@ -90,10 +91,12 @@ export async function createStripeSubscriptionForMerchant(
   });
 
   // Calculate trial end date
+  // Access current_period_end using type assertion as it may not be in the type definition
+  const subscriptionWithPeriod = subscription as any;
   const trialEnd = subscription.trial_end
     ? new Date(subscription.trial_end * 1000).toISOString()
-    : subscription.current_period_end
-      ? new Date(subscription.current_period_end * 1000).toISOString()
+    : subscriptionWithPeriod.current_period_end
+      ? new Date(subscriptionWithPeriod.current_period_end * 1000).toISOString()
       : null;
 
   // Update merchant with subscription details
@@ -179,10 +182,12 @@ async function updateMerchantSubscriptionStatus(
   }
 
   // Calculate trial end
+  // Access current_period_end using type assertion as it may not be in the type definition
+  const subscriptionWithPeriod = subscription as any;
   const trialEnd = subscription.trial_end
     ? new Date(subscription.trial_end * 1000).toISOString()
-    : subscription.current_period_end
-      ? new Date(subscription.current_period_end * 1000).toISOString()
+    : subscriptionWithPeriod.current_period_end
+      ? new Date(subscriptionWithPeriod.current_period_end * 1000).toISOString()
       : null;
 
   await supabaseAdmin

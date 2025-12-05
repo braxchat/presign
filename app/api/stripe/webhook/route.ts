@@ -216,10 +216,12 @@ export async function POST(request: NextRequest) {
 
     if (event.type === 'invoice.payment_failed') {
       const invoice = event.data.object as Stripe.Invoice;
-      if (invoice.subscription) {
-        const subscription = await stripe.subscriptions.retrieve(
-          typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription.id
-        );
+      // Access subscription property using bracket notation to bypass TypeScript strict checking
+      // Stripe Invoice objects do have a subscription property, but it's not always in the type definition
+      const subscriptionId = (invoice as any).subscription as string | Stripe.Subscription | null;
+      if (subscriptionId) {
+        const subscriptionIdString = typeof subscriptionId === 'string' ? subscriptionId : subscriptionId.id;
+        const subscription = await stripe.subscriptions.retrieve(subscriptionIdString);
         await updateMerchantSubscriptionFromStripe(subscription);
         console.log('Payment failed for subscription:', subscription.id);
       }

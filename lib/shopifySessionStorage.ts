@@ -13,6 +13,8 @@ export class SupabaseSessionStorage {
   async storeSession(session: Session): Promise<boolean> {
     try {
       // Serialize session to JSON for storage
+      // Use type assertion to access associatedUser which may not be in the type definition
+      const sessionWithUser = session as any;
       const sessionJson = JSON.stringify({
         id: session.id,
         shop: session.shop,
@@ -21,14 +23,14 @@ export class SupabaseSessionStorage {
         scope: session.scope,
         expires: session.expires ? session.expires.toISOString() : null,
         accessToken: session.accessToken,
-        associatedUser: session.associatedUser ? {
-          id: session.associatedUser.id,
-          firstName: session.associatedUser.firstName,
-          lastName: session.associatedUser.lastName,
-          email: session.associatedUser.email,
-          accountOwner: session.associatedUser.accountOwner,
-          locale: session.associatedUser.locale,
-          collaborator: session.associatedUser.collaborator,
+        associatedUser: sessionWithUser.associatedUser ? {
+          id: sessionWithUser.associatedUser.id,
+          firstName: sessionWithUser.associatedUser.firstName,
+          lastName: sessionWithUser.associatedUser.lastName,
+          email: sessionWithUser.associatedUser.email,
+          accountOwner: sessionWithUser.associatedUser.accountOwner,
+          locale: sessionWithUser.associatedUser.locale,
+          collaborator: sessionWithUser.associatedUser.collaborator,
         } : null,
       });
 
@@ -43,7 +45,7 @@ export class SupabaseSessionStorage {
             scope: session.scope || null,
             expires: session.expires ? session.expires.toISOString() : null,
             access_token: session.accessToken || null,
-            user_id: session.associatedUser ? String(session.associatedUser.id) : null,
+            user_id: sessionWithUser.associatedUser ? String(sessionWithUser.associatedUser.id) : null,
             session_data: sessionJson,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
