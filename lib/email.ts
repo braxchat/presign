@@ -1,10 +1,9 @@
 import { Resend } from 'resend';
+import { DEFAULT_SENDER } from './email/sender';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const APP_NAME = 'PreSign';
-const BUYER_FROM_EMAIL = 'no-reply@presign.app';
-const MERCHANT_FROM_EMAIL = 'support@presign.app';
 
 /**
  * Generate the buyer status page URL
@@ -253,7 +252,7 @@ Sent automatically by ${APP_NAME}
 
   try {
     const { data, error } = await resend.emails.send({
-      from: `${APP_NAME} <${BUYER_FROM_EMAIL}>`,
+      from: DEFAULT_SENDER,
       to: buyerEmail,
       subject,
       html,
@@ -440,7 +439,7 @@ Sent automatically by ${APP_NAME}
 
   try {
     const { data, error } = await resend.emails.send({
-      from: `${APP_NAME} <${BUYER_FROM_EMAIL}>`,
+      from: DEFAULT_SENDER,
       to: buyerEmail,
       subject,
       html,
@@ -607,7 +606,7 @@ Sent automatically by ${APP_NAME}
 
   try {
     const { data, error } = await resend.emails.send({
-      from: `${APP_NAME} <${BUYER_FROM_EMAIL}>`,
+      from: DEFAULT_SENDER,
       to: buyerEmail,
       subject,
       html,
@@ -781,7 +780,7 @@ including loss, theft, or damage. You may still need to update delivery options 
 
   try {
     const { data, error } = await resend.emails.send({
-      from: `PreSign Support <${MERCHANT_FROM_EMAIL}>`,
+      from: DEFAULT_SENDER,
       to: merchantEmail,
       subject,
       html,
@@ -921,7 +920,7 @@ If you have any questions, please contact us at support@presign.app.
 
   try {
     const { data, error } = await resend.emails.send({
-      from: `${APP_NAME} <${BUYER_FROM_EMAIL}>`,
+      from: DEFAULT_SENDER,
       to: buyerEmail,
       subject,
       html,
@@ -1050,7 +1049,7 @@ If you have any questions or would like to appeal this decision, please contact 
 
   try {
     const { data, error } = await resend.emails.send({
-      from: `${APP_NAME} <${BUYER_FROM_EMAIL}>`,
+      from: DEFAULT_SENDER,
       to: buyerEmail,
       subject,
       html,
@@ -1237,7 +1236,7 @@ This refund request was submitted by the buyer via email to refunds@presign.app.
 
   try {
     const { data, error } = await resend.emails.send({
-      from: `PreSign Support <${MERCHANT_FROM_EMAIL}>`,
+      from: DEFAULT_SENDER,
       to: adminEmail,
       subject,
       html,

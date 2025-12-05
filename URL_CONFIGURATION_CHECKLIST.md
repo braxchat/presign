@@ -75,7 +75,7 @@ return `${baseUrl}/status/${buyerToken}`;
 
 Ensure `APP_BASE_URL` is set in Vercel.
 
-**Default FROM_EMAIL**: `notify@presign.app` (configurable via `FROM_EMAIL` env var)
+**Default RESEND_FROM_EMAIL**: `support@presign.app` (configurable via `RESEND_FROM_EMAIL` env var)
 
 ### 7. Buyer Status Page
 
@@ -95,7 +95,7 @@ This is automatically correct if `APP_BASE_URL` is set.
 - [ ] Shopify App URL set to `https://presign.app`
 - [ ] Shopify Redirect URL set to `https://presign.app/api/shopify/auth/callback`
 - [ ] Stripe webhook endpoint set to `https://presign.app/api/stripe/webhook`
-- [ ] Resend FROM_EMAIL configured (default: `notify@presign.app`)
+- [ ] Resend RESEND_FROM_EMAIL configured (default: `support@presign.app`)
 - [ ] Resend domain verified (if using custom domain)
 
 ---

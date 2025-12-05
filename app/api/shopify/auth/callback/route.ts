@@ -48,9 +48,22 @@ async function registerWebhook(
 
 export async function GET(request: NextRequest) {
   try {
+    // Log environment variables for debugging
+    console.log('CALLBACK ROUTE CALLED', process.env.SHOPIFY_APP_URL);
+    console.log('APP_BASE_URL:', process.env.APP_BASE_URL);
+
+    // Convert NextRequest to format expected by Shopify Node adapter
+    const url = new URL(request.url);
+    const rawRequest = {
+      url: request.url,
+      method: request.method,
+      headers: Object.fromEntries(request.headers.entries()),
+      query: Object.fromEntries(url.searchParams.entries()),
+    };
+
     // Complete the OAuth flow
     const callbackResponse = await shopify.auth.callback({
-      rawRequest: request,
+      rawRequest: rawRequest as any,
     });
 
     const { session } = callbackResponse;
