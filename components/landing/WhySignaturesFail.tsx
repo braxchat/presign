@@ -111,7 +111,7 @@ export function WhySignaturesFail() {
             <div className="grid md:grid-cols-3 gap-6">
               <div className="p-6 rounded-xl border border-border bg-card text-center">
                 <div className="text-3xl font-bold text-accent mb-2">26–31%</div>
-                <h4 className="font-semibold text-lg mb-2">Firearms / FFL Shipments</h4>
+                <h4 className="font-semibold text-lg mb-2">Hunting Accessories & Ammunition</h4>
                 <p className="text-sm text-muted-foreground">Highest failure rate category</p>
               </div>
               <div className="p-6 rounded-xl border border-border bg-card text-center">

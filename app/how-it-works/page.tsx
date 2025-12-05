@@ -53,7 +53,7 @@ export default function HowItWorksPage() {
                 </div>
                 <h3 className="font-semibold text-lg mb-2">Step 3</h3>
                 <p className="text-muted-foreground">
-                  Buyer authorizes delivery for $2.99
+                Buyer authorizes remote signature delivery for $2.99
                 </p>
               </div>
               <div className="text-center">

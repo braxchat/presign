@@ -83,7 +83,7 @@ export default function SupportPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-12">
+            <div id="faq" className="mb-12">
               <div className="flex items-center gap-3 mb-8">
                 <HelpCircle className="h-8 w-8 text-accent" />
                 <h2 className="font-display text-3xl font-bold text-foreground">
@@ -108,7 +108,7 @@ export default function SupportPage() {
                     What carriers does PreSign support?
                   </h3>
                   <p className="text-muted-foreground">
-                    PreSign currently works with UPS and FedEx shipments. We're working on additional carrier integrations and will notify merchants when they become available.
+                    PreSign is currently proccessing a partnership with UPS and FedEx to Automatically process remote signature delivery for shipments without the need for manual intervention from  the merchant. We're working on additional carrier integrations and will notify merchants when they become available.
                   </p>
                 </div>
 
@@ -241,6 +241,11 @@ export default function SupportPage() {
                 <li>
                   <Link href="/#features" className="hover:text-foreground">
                     Features
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/support#faq" className="hover:text-foreground">
+                    FAQ
                   </Link>
                 </li>
               </ul>
