@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { QuickAction } from "@/components/dashboard/QuickAction";
@@ -15,6 +15,7 @@ import {
   FileText,
   TrendingUp,
   Loader2,
+  RefreshCw,
 } from "lucide-react";
 
 interface Shipment {
@@ -47,56 +48,9 @@ interface Payout {
   paid_at: string | null;
 }
 
-// Fetch functions
-async function fetchShipments(): Promise<{ shipments: Shipment[]; count: number }> {
-  const response = await fetch('/api/merchant/shipments?limit=5');
-  if (!response.ok) {
-    throw new Error('Failed to fetch shipments');
-  }
-  return response.json();
-}
-
-async function fetchStats(): Promise<Stats> {
-  const response = await fetch('/api/merchant/stats');
-  if (!response.ok) {
-    throw new Error('Failed to fetch stats');
-  }
-  return response.json();
-}
-
-async function fetchPayouts(): Promise<{ payouts: Payout[] }> {
-  const response = await fetch('/api/merchant/payouts?limit=5');
-  if (!response.ok) {
-    throw new Error('Failed to fetch payouts');
-  }
-  return response.json();
-}
-
 export default function DashboardPage() {
-  // Fetch shipments with auto-refresh every 15 seconds
-  const { data: shipmentsData, isLoading: shipmentsLoading } = useQuery({
-    queryKey: ['merchant-shipments'],
-    queryFn: fetchShipments,
-    refetchInterval: 15000, // 15 seconds
-  });
-
-  // Fetch stats with auto-refresh every 15 seconds
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['merchant-stats'],
-    queryFn: fetchStats,
-    refetchInterval: 15000, // 15 seconds
-  });
-
-  // Fetch payouts with auto-refresh every 15 seconds
-  const { data: payoutsData, isLoading: payoutsLoading } = useQuery({
-    queryKey: ['merchant-payouts'],
-    queryFn: fetchPayouts,
-    refetchInterval: 15000, // 15 seconds
-  });
-
-  const isLoading = shipmentsLoading || statsLoading || payoutsLoading;
-  const recentShipments = shipmentsData?.shipments || [];
-  const statsData = stats || {
+  const [shipments, setShipments] = useState<Shipment[]>([]);
+  const [stats, setStats] = useState<Stats>({
     monthlyOverrides: 0,
     totalOverrides: 0,
     pendingRequests: 0,
@@ -105,7 +59,65 @@ export default function DashboardPage() {
     totalEarningsCents: 0,
     availableBalanceCents: 0,
     totalPaidOutCents: 0,
-  };
+  });
+  const [payouts, setPayouts] = useState<Payout[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  async function loadShipments() {
+    try {
+      const res = await fetch("/api/merchant/shipments?limit=5");
+      if (!res.ok) {
+        throw new Error('Failed to fetch shipments');
+      }
+      const data = await res.json();
+      setShipments(data.shipments || []);
+    } catch (err) {
+      console.error("Failed to load shipments:", err);
+    }
+  }
+
+  async function loadStats() {
+    try {
+      const res = await fetch("/api/merchant/stats");
+      if (!res.ok) {
+        throw new Error('Failed to fetch stats');
+      }
+      const data = await res.json();
+      setStats(data);
+    } catch (err) {
+      console.error("Failed to load stats:", err);
+    }
+  }
+
+  async function loadPayouts() {
+    try {
+      const res = await fetch("/api/merchant/payouts?limit=5");
+      if (!res.ok) {
+        throw new Error('Failed to fetch payouts');
+      }
+      const data = await res.json();
+      setPayouts(data.payouts || []);
+    } catch (err) {
+      console.error("Failed to load payouts:", err);
+    }
+  }
+
+  async function loadAll() {
+    setLoading(true);
+    try {
+      await Promise.all([loadShipments(), loadStats(), loadPayouts()]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Load once on page load
+  useEffect(() => {
+    loadAll();
+  }, []);
+
+  const recentShipments = shipments;
+  const statsData = stats;
 
   // Format earnings
   const formatCents = (cents: number) => {
@@ -124,12 +136,23 @@ export default function DashboardPage() {
             Welcome back
           </p>
         </div>
-        <Link href="/merchant/shipments/new">
-          <Button variant="accent" className="gap-2">
-            <Plus className="h-4 w-4" />
-            Add Shipment
+        <div className="flex gap-3">
+          <Button 
+            variant="outline" 
+            className="gap-2"
+            onClick={loadAll}
+            disabled={loading}
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
           </Button>
-        </Link>
+          <Link href="/merchant/shipments/new">
+            <Button variant="accent" className="gap-2">
+              <Plus className="h-4 w-4" />
+              Add Shipment
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -202,13 +225,25 @@ export default function DashboardPage() {
           <h2 className="font-display text-lg font-semibold text-foreground">
             Recent Shipments
           </h2>
-          <Link
-            href="/merchant/shipments"
-            className="text-sm text-accent hover:underline flex items-center gap-1"
-          >
-            View all
-            <ArrowUpRight className="h-4 w-4" />
-          </Link>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={loadShipments}
+              disabled={loading}
+              className="gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Link
+              href="/merchant/shipments"
+              className="text-sm text-accent hover:underline flex items-center gap-1"
+            >
+              View all
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
         <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
           {isLoading ? (

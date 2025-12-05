@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { cookies, headers } from "next/headers";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { WhySignaturesFail } from "@/components/landing/WhySignaturesFail";
 import { 
   Package, 
   Mail, 
@@ -97,6 +98,9 @@ export default async function Page({
           </div>
         </div>
       </section>
+
+      {/* Why Signatures Fail Section */}
+      <WhySignaturesFail />
 
       {/* How It Works Section */}
       <section id="how-it-works" className="py-20 bg-muted/30">
