@@ -116,7 +116,7 @@ export default async function Page({
                 </div>
                 <h3 className="font-semibold text-lg mb-2">Step 1</h3>
                 <p className="text-muted-foreground">
-                  Merchant ships an order that requires Direct Signature
+                After free installation - Merchants can ship an order that requires Direct Signature
                 </p>
               </div>
               <div className="text-center">
@@ -134,7 +134,7 @@ export default async function Page({
                 </div>
                 <h3 className="font-semibold text-lg mb-2">Step 3</h3>
                 <p className="text-muted-foreground">
-                  Buyer authorizes delivery for $2.99
+                Buyer authorizes remote signature delivery for $2.99
                 </p>
               </div>
               <div className="text-center">
@@ -143,7 +143,7 @@ export default async function Page({
                 </div>
                 <h3 className="font-semibold text-lg mb-2">Step 4</h3>
                 <p className="text-muted-foreground">
-                  Merchant receives documentation + updates delivery instructions
+                The merchant receives the documentation, updates the delivery instructions, and earns $1 once the process is completed.
                 </p>
               </div>
             </div>
