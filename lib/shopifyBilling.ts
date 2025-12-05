@@ -42,7 +42,7 @@ export async function ensureShopifySubscription(
     `;
 
     const existingResponse = await client.request(existingSubscriptionQuery);
-    const activeSubscriptions = (existingResponse.body as any)?.data?.currentAppInstallation?.activeSubscriptions || [];
+    const activeSubscriptions = (existingResponse.data as any)?.currentAppInstallation?.activeSubscriptions || [];
 
     // If there's an active subscription, update merchant record
     if (activeSubscriptions.length > 0) {
@@ -116,7 +116,7 @@ export async function ensureShopifySubscription(
     };
 
     const response = await client.request(createSubscriptionMutation, { variables });
-    const result = (response.body as any)?.data?.appSubscriptionCreate;
+    const result = (response.data as any)?.appSubscriptionCreate;
 
     if (result?.userErrors && result.userErrors.length > 0) {
       console.error('Shopify subscription creation errors:', result.userErrors);
@@ -202,7 +202,7 @@ export async function updateShopifySubscriptionStatus(
       variables: { id: subscriptionId },
     });
 
-    const subscription = (response.body as any)?.data?.node;
+    const subscription = (response.data as any)?.node;
 
     if (!subscription) {
       throw new Error('Subscription not found');

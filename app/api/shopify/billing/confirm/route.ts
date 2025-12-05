@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     `;
 
     const response = await client.request(subscriptionQuery);
-    const activeSubscriptions = (response.body as any)?.data?.currentAppInstallation?.activeSubscriptions || [];
+    const activeSubscriptions = (response.data as any)?.currentAppInstallation?.activeSubscriptions || [];
 
     if (activeSubscriptions.length > 0) {
       const subscription = activeSubscriptions[0];
