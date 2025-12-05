@@ -170,15 +170,16 @@ export async function updateShopifySubscriptionStatus(
       throw new Error('Merchant not found');
     }
 
-    if (!merchant.shop_domain || !merchant.access_token) {
-      throw new Error('Merchant missing Shopify credentials');
+    if (!merchant.shopify_session_id) {
+      throw new Error('Merchant missing Shopify session ID');
     }
 
-    // Create session for GraphQL query
-    const session = {
-      shop: merchant.shop_domain,
-      accessToken: merchant.access_token,
-    };
+    // Load the actual Shopify session from storage
+    const session = await shopify.sessionStorage.loadSession(merchant.shopify_session_id);
+
+    if (!session) {
+      throw new Error('Failed to load Shopify session');
+    }
 
     const client = new shopify.clients.Graphql({ session });
 

@@ -27,18 +27,30 @@ export async function POST(request: NextRequest) {
   try {
     const merchant = await getCurrentMerchant(request);
 
-    if (!merchant || !merchant.shop_domain || !merchant.access_token) {
+    if (!merchant || !merchant.shop_domain) {
       return NextResponse.json(
-        { error: 'Merchant not found or missing credentials' },
+        { error: 'Merchant not found' },
         { status: 404 }
       );
     }
 
-    // Create Shopify session
-    const session = {
-      shop: merchant.shop_domain,
-      accessToken: merchant.access_token,
-    };
+    if (!merchant.shopify_session_id) {
+      return NextResponse.json(
+        { error: 'Merchant session not found. Please reinstall the app.' },
+        { status: 404 }
+      );
+    }
+
+    // Load the actual Shopify session from storage
+    const session = await shopify.sessionStorage.loadSession(merchant.shopify_session_id);
+
+    if (!session) {
+      console.error('Failed to load Shopify session:', merchant.shopify_session_id);
+      return NextResponse.json(
+        { error: 'Failed to load session. Please reinstall the app.' },
+        { status: 500 }
+      );
+    }
 
     // Use the existing ensureShopifySubscription function
     const { ensureShopifySubscription } = await import('@/lib/shopifyBilling');

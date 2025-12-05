@@ -73,6 +73,15 @@ export async function GET(request: NextRequest) {
     const shopDomain = session.shop;
     const accessToken = session.accessToken;
 
+    // Store the full Shopify session in session storage
+    try {
+      await shopify.sessionStorage.storeSession(session);
+      console.log('Shopify session stored:', session.id);
+    } catch (storageError) {
+      console.error('Error storing Shopify session:', storageError);
+      // Continue even if session storage fails - we still have access_token
+    }
+
     // Fetch merchant email and shop name from Shopify
     const client = new shopify.clients.Rest({ session });
     let merchantEmail: string | null = null;
@@ -97,6 +106,7 @@ export async function GET(request: NextRequest) {
           business_name: merchantName || undefined,
           email: merchantEmail || undefined,
           billing_provider: 'shopify',
+          shopify_session_id: session.id,
           updated_at: new Date().toISOString(),
         },
         {

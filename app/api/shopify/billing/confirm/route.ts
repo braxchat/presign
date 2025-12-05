@@ -22,16 +22,24 @@ export async function GET(request: NextRequest) {
       .eq('shop_domain', shopDomain)
       .single();
 
-    if (!merchant || !merchant.access_token) {
+    if (!merchant) {
       return NextResponse.redirect(`${process.env.APP_BASE_URL}/onboarding/step5?error=merchant_not_found`);
     }
 
-    // Create session and check subscription status
-    const session = {
-      shop: merchant.shop_domain,
-      accessToken: merchant.access_token,
-    };
+    if (!merchant.shopify_session_id) {
+      console.error('Merchant missing shopify_session_id:', merchant.id);
+      return NextResponse.redirect(`${process.env.APP_BASE_URL}/onboarding/step5?error=session_not_found`);
+    }
 
+    // Load the actual Shopify session from storage
+    const session = await shopify.sessionStorage.loadSession(merchant.shopify_session_id);
+
+    if (!session) {
+      console.error('Failed to load Shopify session:', merchant.shopify_session_id);
+      return NextResponse.redirect(`${process.env.APP_BASE_URL}/onboarding/step5?error=session_load_failed`);
+    }
+
+    // Create GraphQL client with the full session
     const client = new shopify.clients.Graphql({ session });
 
     // Query current subscription
