@@ -574,7 +574,7 @@ export default async function Page({
               <h4 className="font-semibold mb-4">Contact</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <Link href="/contact" className="hover:text-foreground">
+                  <Link href="/support" className="hover:text-foreground">
                     Contact Us
                   </Link>
                 </li>
